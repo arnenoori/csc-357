@@ -7,6 +7,7 @@ typedef unsigned short WORD;
 typedef unsigned int DWORD;
 typedef int LONG;
 
+/* makes sure no random padding is added */
 #pragma pack(push, 1)
 
 typedef struct tagBITMAPFILEHEADER {
@@ -33,10 +34,12 @@ typedef struct tagBITMAPINFOHEADER {
 
 #pragma pack(pop)
 
+/* adjusts the contrast by looping through each pixel and changing the intensity of RGB */
 void change_contrast(unsigned char *data, LONG width, LONG height, float factor) {
     for (LONG i = 0; i < width * height * 3; i++) {
         float pixel_normalized = data[i] / 255.0;
-        data[i] = (unsigned char)round(pow(pixel_normalized, factor) * 255.0);
+        data[i] = (unsigned char)round(pow(pixel_normalized, factor) * 255.0); // contrast value
+        /* normalizes intensity, high contrast becomes more intense, low contrast becomes less intense */
     }
 }
 
@@ -90,6 +93,19 @@ int main(int argc, char *argv[]) {
 }
 
 /*
+
 cd ~/Documents/Github/csc-357/lab2/contrast.c
+
+gcc contrast.c -o contrast -lm
+
+./contrast blend\ images/flowers.bmp flowers_output.bmp 3.2
+
+./contrast blend\ images/jar.bmp jar_output.bmp 3.2
+
+./contrast blend\ images/lion.bmp lion_output.bmp 3.2
+
+./contrast blend\ images/tunnel.bmp tunnel_output.bmp 3.2
+
+./contrast blend\ images/wolf.bmp wolf_output.bmp 3.2
 
 */
