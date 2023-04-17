@@ -69,7 +69,11 @@ int main(int argc, char *argv[]) {
     LONG height = info_header.biHeight;
     DWORD image_size = width * height * 3;
 
-    unsigned char *data = (unsigned char *)malloc(image_size);
+    unsigned char *data = (unsigned char *)sbrk(image_size);
+    if (data == (void *)-1) {
+        perror("Error allocating memory with sbrk");
+        return 1;
+    }
 
     fread(data, 1, image_size, input_file);
     fclose(input_file);
@@ -87,25 +91,10 @@ int main(int argc, char *argv[]) {
     fwrite(data, 1, image_size, output_file);
     fclose(output_file);
 
-    free(data);
+    if (brk(data) == -1) {
+        perror("Error deallocating memory with brk");
+        return 1;
+    }
 
     return 0;
 }
-
-/*
-
-cd ~/Documents/Github/csc-357/lab2/contrast.c
-
-gcc contrast.c -o contrast -lm
-
-./contrast blend\ images/flowers.bmp flowers_output.bmp 3.2
-
-./contrast blend\ images/jar.bmp jar_output.bmp 3.2
-
-./contrast blend\ images/lion.bmp lion_output.bmp 3.2
-
-./contrast blend\ images/tunnel.bmp tunnel_output.bmp 3.2
-
-./contrast blend\ images/wolf.bmp wolf_output.bmp 3.2
-
-*/
