@@ -7,13 +7,13 @@
 #include <chrono>
 #include "bmp.h"
 
-void color_grade(Bitmap& bmp, float red, float green, float blue, int start_row, int end_row);
+void color_grade(unsigned char* data, int width, int row_padded, float red, float green, float blue, int start_row, int end_row);
 void read_bitmap(const char* filename, Bitmap& bmp);
 void write_bitmap(const char* filename, const Bitmap& bmp);
 
 int main(int argc, char* argv[]) {
-    if (argc != 5) {
-        std::cerr << "Usage: " << argv[0] << " [IMAGEFILE] [COLOR_GRADING] [OUTPUTFILE]" << std::endl;
+    if (argc != 6) {
+        std::cerr << "Usage: " << argv[0] << " [IMAGEFILE] [RED] [GREEN] [BLUE] [OUTPUTFILE]" << std::endl;
         return 1;
     }
 
@@ -50,12 +50,13 @@ int main(int argc, char* argv[]) {
     }
 
     // Perform color grading
-    color_grade(bmp, red, green, blue, start_row, end_row);
+    color_grade(shared_data, bmp.width, bmp.row_padded, red, green, blue, start_row, end_row);
 
     // Wait for child process to finish
     if (pid > 0) {
         int status;
         waitpid(pid, &status, 0);
+        memcpy(bmp.data, shared_data, size);
     }
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -71,20 +72,22 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-void color_grade(Bitmap& bmp, float red, float green, float blue, int start_row, int end_row) {
+void color_grade(unsigned char* data, int width, int row_padded, float red, float green, float blue, int start_row, int end_row) {
     for (int row = start_row; row < end_row; ++row) {
-        for (int col = 0; col < bmp.width; ++col) {
-            int index = row * bmp.row_padded + col * 3;
-            float normalized_blue = bmp.data[index] / 255.0f;
-            float normalized_green = bmp.data[index + 1] / 255.0f;
-            float normalized_red = bmp.data[index + 2] / 255.0f;
+        for (int col = 0; col < width; ++col) {
+            int index = row * row_padded + col * 3;
+            float normalized_blue = data[index] / 255.0f;
+            float normalized_green = data[index + 1] / 255.0f;
+            float normalized_red = data[index + 2] / 255.0f;
 
-            bmp.data[index] = std::min(255, static_cast<int>(normalized_blue * blue * 255));
-            bmp.data[index + 1] = std::min(255, static_cast<int>(normalized_green * green * 255));
-            bmp.data[index + 2] = std::min(255, static_cast<int>(normalized_red * red * 255));
+            data[index] = std::min(255, static_cast<int>(normalized_blue * blue * 255));
+            data[index + 1] = std::min(255, static_cast<int>(normalized_green * green * 255));
+            data[index + 2] = std::min(255, static_cast<int>(normalized_red * red * 255));
         }
     }
 }
+
+
 
 void read_bitmap(const char* filename, Bitmap& bmp) {
     std::ifstream file(filename, std::ios::binary);
@@ -137,5 +140,6 @@ void write_bitmap(const char* filename, const Bitmap& bmp) {
 }
 
 // cd ~/Documents/Github/csc-357/lab3
-// g++ -o colorgrading ARNE_colorgrading.cpp
+// g++ -std=c++11 -o colorgrading ARNE_colorgrading.cpp
 // ./colorgrading input.bmp red green blue output.bmp
+// ./colorgrading lion.bmp 0.8 1.0 0.8 result.bmp
