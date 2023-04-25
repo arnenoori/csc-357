@@ -27,12 +27,28 @@ int main(int argc, char* argv[]) {
     float blue = std::stof(argv[4]);
     const char* output_filename = argv[5];
 
+    // Perform color grading without fork
+    Bitmap bmp_without_fork;
+    read_bitmap(input_filename, bmp_without_fork);
+    
+    auto start_without_fork = std::chrono::high_resolution_clock::now();
+
+    color_grade(bmp_without_fork.data, bmp_without_fork.width, bmp_without_fork.row_padded, red, green, blue, 0, bmp_without_fork.height);
+
+    auto end_without_fork = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_without_fork = end_without_fork - start_without_fork;
+    std::cout << "Elapsed time (without fork): " << elapsed_without_fork.count() << " seconds" << std::endl;
+
+    // Save the result without fork
+    write_bitmap(output_filename, bmp_without_fork);
+
+    // Perform color grading with fork
     Bitmap bmp;
     read_bitmap(input_filename, bmp);
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    // creating shared memory
+    /// creating shared memory
     size_t size = bmp.height * bmp.row_padded;
     unsigned char* shared_data = (unsigned char*)mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     memcpy(shared_data, bmp.data, size);
@@ -76,7 +92,7 @@ int main(int argc, char* argv[]) {
         sem_destroy(&sem_parent);
         sem_destroy(&sem_child);
     }
-
+    
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end - start;
     std::cout << "Elapsed time (with fork): " << elapsed.count() << " seconds" << std::endl;
@@ -88,6 +104,7 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
+
 
 void color_grade(unsigned char* data, int width, int row_padded, float red, float green, float blue, int start_row, int end_row) {
     for (int row = start_row; row < end_row; ++row) {
