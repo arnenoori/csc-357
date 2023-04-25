@@ -5,11 +5,15 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <chrono>
+#include <semaphore.h>
 #include "bmp.h"
 
 void color_grade(unsigned char* data, int width, int row_padded, float red, float green, float blue, int start_row, int end_row);
 void read_bitmap(const char* filename, Bitmap& bmp);
 void write_bitmap(const char* filename, const Bitmap& bmp);
+
+sem_t sem_parent;
+sem_t sem_child;
 
 int main(int argc, char* argv[]) {
     if (argc != 6) {
@@ -32,6 +36,11 @@ int main(int argc, char* argv[]) {
     size_t size = bmp.height * bmp.row_padded;
     unsigned char* shared_data = (unsigned char*)mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     memcpy(shared_data, bmp.data, size);
+
+    // Initialize semaphores
+    sem_init(&sem_parent, 1, 0);
+    sem_init(&sem_child, 1, 0);
+
     // Fork process
     pid_t pid = fork();
 
@@ -42,9 +51,11 @@ int main(int argc, char* argv[]) {
 
     int start_row, end_row;
     if (pid == 0) { // Child process
+        sem_post(&sem_parent); // Signal parent process
         start_row = bmp.height / 2;
         end_row = bmp.height;
     } else { // Parent process
+        sem_wait(&sem_parent); // Wait for child process to start
         start_row = 0;
         end_row = bmp.height / 2;
     }
@@ -52,11 +63,18 @@ int main(int argc, char* argv[]) {
     // Perform color grading
     color_grade(shared_data, bmp.width, bmp.row_padded, red, green, blue, start_row, end_row);
 
-    // Wait for child process to finish
-    if (pid > 0) {
-        int status;
-        waitpid(pid, &status, 0);
+    if (pid == 0) { // Child process
+        sem_post(&sem_child); // Signal parent process that child is done
+        munmap(shared_data, size);
+        sem_destroy(&sem_parent);
+        sem_destroy(&sem_child);
+        exit(0);
+    } else { // Parent process
+        sem_wait(&sem_child); // Wait for child process to finish
         memcpy(bmp.data, shared_data, size);
+        munmap(shared_data, size);
+        sem_destroy(&sem_parent);
+        sem_destroy(&sem_child);
     }
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -86,7 +104,6 @@ void color_grade(unsigned char* data, int width, int row_padded, float red, floa
         }
     }
 }
-
 
 
 void read_bitmap(const char* filename, Bitmap& bmp) {
@@ -143,3 +160,6 @@ void write_bitmap(const char* filename, const Bitmap& bmp) {
 // g++ -std=c++11 -o colorgrading ARNE_colorgrading.cpp
 // ./colorgrading input.bmp red green blue output.bmp
 // ./colorgrading lion.bmp 0.8 1.0 0.8 result.bmp
+
+
+// test child and process, delete greens on 1 end and blues on one end, debug by changing the values of some
