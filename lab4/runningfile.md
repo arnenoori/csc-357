@@ -1,6 +1,6 @@
 # Inactivity Detector
 
-This program detects inactivity on the keyboard input and prints a message when no activity is detected for at least 10 seconds.
+This program detects inactivity on the keyboard input and prints a message when no activity is detected for at least 10 seconds as per the requirements of the lab
 
 ## How to compile and run the program
 
