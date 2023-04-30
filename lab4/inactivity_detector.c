@@ -16,43 +16,40 @@ void activity_detected(int sig) {
 }
 
 int main() {
-    int comm_pipe[2];
-    pipe(comm_pipe);
-    fcntl(comm_pipe[0], F_SETFL, O_NONBLOCK);
-    fcntl(comm_pipe[1], F_SETFL, O_NONBLOCK);
+    int main_pipe[2];
+    pipe(main_pipe); // create pipe before the fork
+    fcntl(main_pipe[0], F_SETFL, O_NONBLOCK);
+    fcntl(main_pipe[1], F_SETFL, O_NONBLOCK);
 
     pid_t pid = fork();
-    if (pid == 0) { // Child process
-        close(comm_pipe[1]); // Close write end of the pipe
+    if (pid == 0) { // child process
+        close(main_pipe[1]); // close write end of the pipe
 
         while (1) {
-            sleep(10);
+            sleep(10); // child becomes inactive for 10 seconds
 
             char buffer[2];
-            int bytesRead = read(comm_pipe[0], buffer, 1);
+            int bytesRead = read(main_pipe[0], buffer, 1);
             if (bytesRead <= 0) {
                 printf("Inactivity detected!\n");
             }
         }
-    } else if (pid > 0) { // Parent process
-        close(comm_pipe[0]); // Close read end of the pipe
-
+    } else if (pid > 0) { // parent process
+        close(main_pipe[0]); // close read end of the pipe
         signal(SIGUSR1, activity_detected);
-
         char text[256];
 
         while (1) {
             fgets(text, sizeof(text), stdin);
-            text[strcspn(text, "\n")] = 0; // Remove the newline character
+            text[strcspn(text, "\n")] = 0; // remove the newline character
 
-            if (strcmp(text, "quit") == 0) {
+            if (strcmp(text, "quit") == 0) { // quit functionality
                 kill(pid, SIGTERM);
                 wait(NULL);
                 break;
             }
-
-            update_text(text);
-            write(comm_pipe[1], "1", 1);
+            update_text(text); // updates the output
+            write(main_pipe[1], "1", 1);
         }
     } else {
         perror("fork");
