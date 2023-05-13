@@ -1,0 +1,713 @@
+
+--------------------------------------------------------------
+no heapAllocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Freeing the chunk at address 0x102100018
+Freeing the chunk at address 0x102101018
+Freeing the chunk at address 0x102102018
+Freeing the chunk at address 0x102103018
+Freeing the chunk at address 0x102104018
+Freeing the chunk at address 0x102105018
+Freeing the chunk at address 0x102106018
+Freeing the chunk at address 0x102107018
+Freeing the chunk at address 0x102108018
+Freeing the chunk at address 0x102109018
+Freeing the chunk at address 0x10210a018
+Freeing the chunk at address 0x10210b018
+Freeing the chunk at address 0x10210c018
+Freeing the chunk at address 0x10210d018
+Freeing the chunk at address 0x10210e018
+Freeing the chunk at address 0x10210f018
+Freeing the chunk at address 0x102110018
+Freeing the chunk at address 0x102111018
+Freeing the chunk at address 0x102112018
+Freeing the chunk at address 0x102113018
+Freeing the chunk at address 0x102114018
+Freeing the chunk at address 0x102115018
+Freeing the chunk at address 0x102116018
+Freeing the chunk at address 0x102117018
+Freeing the chunk at address 0x102118018
+Freeing the chunk at address 0x102119018
+Freeing the chunk at address 0x10211a018
+Freeing the chunk at address 0x10211b018
+Freeing the chunk at address 0x10211c018
+Freeing the chunk at address 0x10211d018
+Freeing the chunk at address 0x10211e018
+Freeing the chunk at address 0x10211f018
+Freeing the chunk at address 0x102120018
+Freeing the chunk at address 0x102121018
+Freeing the chunk at address 0x102122018
+Freeing the chunk at address 0x102123018
+Freeing the chunk at address 0x102124018
+Freeing the chunk at address 0x102125018
+Freeing the chunk at address 0x102126018
+Freeing the chunk at address 0x102127018
+Freeing the chunk at address 0x102128018
+Freeing the chunk at address 0x102129018
+Freeing the chunk at address 0x10212a018
+Freeing the chunk at address 0x10212b018
+Freeing the chunk at address 0x10212c018
+Freeing the chunk at address 0x10212d018
+Freeing the chunk at address 0x10212e018
+Freeing the chunk at address 0x10212f018
+Freeing the chunk at address 0x102130018
+Freeing the chunk at address 0x102131018
+Freeing the chunk at address 0x102132018
+Freeing the chunk at address 0x102133018
+Freeing the chunk at address 0x102134018
+Freeing the chunk at address 0x102135018
+Freeing the chunk at address 0x102136018
+Freeing the chunk at address 0x102137018
+Freeing the chunk at address 0x102138018
+Freeing the chunk at address 0x102139018
+Freeing the chunk at address 0x10213a018
+Freeing the chunk at address 0x10213b018
+Freeing the chunk at address 0x10213c018
+Freeing the chunk at address 0x10213d018
+Freeing the chunk at address 0x10213e018
+Freeing the chunk at address 0x10213f018
+Freeing the chunk at address 0x102140018
+Freeing the chunk at address 0x102141018
+Freeing the chunk at address 0x102142018
+Freeing the chunk at address 0x102143018
+Freeing the chunk at address 0x102144018
+Freeing the chunk at address 0x102145018
+Freeing the chunk at address 0x102146018
+Freeing the chunk at address 0x102147018
+Freeing the chunk at address 0x102148018
+Freeing the chunk at address 0x102149018
+Freeing the chunk at address 0x10214a018
+Freeing the chunk at address 0x10214b018
+Freeing the chunk at address 0x10214c018
+Freeing the chunk at address 0x10214d018
+Freeing the chunk at address 0x10214e018
+Freeing the chunk at address 0x10214f018
+Freeing the chunk at address 0x102150018
+Freeing the chunk at address 0x102151018
+Freeing the chunk at address 0x102152018
+Freeing the chunk at address 0x102153018
+Freeing the chunk at address 0x102154018
+Freeing the chunk at address 0x102155018
+Freeing the chunk at address 0x102156018
+Freeing the chunk at address 0x102157018
+Freeing the chunk at address 0x102158018
+Freeing the chunk at address 0x102159018
+
+--------------------------------------------------------------
+0 | current addr: 0x102100000 |size: 368640 | info: 0 | next: 0x10215a000 | prev: 0x0
+1 | current addr: 0x10215a000 |size: 4096 | info: 1 | next: 0x10215b000 | prev: 0x102100000
+2 | current addr: 0x10215b000 |size: 4096 | info: 1 | next: 0x10215c000 | prev: 0x10215a000
+3 | current addr: 0x10215c000 |size: 4096 | info: 1 | next: 0x10215d000 | prev: 0x10215b000
+4 | current addr: 0x10215d000 |size: 4096 | info: 1 | next: 0x10215e000 | prev: 0x10215c000
+5 | current addr: 0x10215e000 |size: 4096 | info: 1 | next: 0x10215f000 | prev: 0x10215d000
+6 | current addr: 0x10215f000 |size: 4096 | info: 1 | next: 0x102160000 | prev: 0x10215e000
+7 | current addr: 0x102160000 |size: 4096 | info: 1 | next: 0x102161000 | prev: 0x10215f000
+8 | current addr: 0x102161000 |size: 4096 | info: 1 | next: 0x102162000 | prev: 0x102160000
+9 | current addr: 0x102162000 |size: 4096 | info: 1 | next: 0x102163000 | prev: 0x102161000
+10 | current addr: 0x102163000 |size: 4096 | info: 1 | next: 0x0 | prev: 0x102162000
+program break on address: 0x102164000
+Freeing the chunk at address 0x10215f018
+
+--------------------------------------------------------------
+0 | current addr: 0x102100000 |size: 368640 | info: 0 | next: 0x10215a000 | prev: 0x0
+1 | current addr: 0x10215a000 |size: 4096 | info: 1 | next: 0x10215b000 | prev: 0x102100000
+2 | current addr: 0x10215b000 |size: 4096 | info: 1 | next: 0x10215c000 | prev: 0x10215a000
+3 | current addr: 0x10215c000 |size: 4096 | info: 1 | next: 0x10215d000 | prev: 0x10215b000
+4 | current addr: 0x10215d000 |size: 4096 | info: 1 | next: 0x10215e000 | prev: 0x10215c000
+5 | current addr: 0x10215e000 |size: 4096 | info: 1 | next: 0x10215f000 | prev: 0x10215d000
+6 | current addr: 0x10215f000 |size: 4096 | info: 1 | next: 0x102160000 | prev: 0x10215e000
+7 | current addr: 0x102160000 |size: 4096 | info: 1 | next: 0x102161000 | prev: 0x10215f000
+8 | current addr: 0x102161000 |size: 4096 | info: 1 | next: 0x102162000 | prev: 0x102160000
+9 | current addr: 0x102162000 |size: 4096 | info: 1 | next: 0x102163000 | prev: 0x102161000
+10 | current addr: 0x102163000 |size: 4096 | info: 1 | next: 0x0 | prev: 0x102162000
+program break on address: 0x102164000
+Freeing the chunk at address 0x10215a018
+Freeing the chunk at address 0x10215b018
+Freeing the chunk at address 0x10215c018
+Freeing the chunk at address 0x10215d018
+Freeing the chunk at address 0x10215e018
+Freeing the chunk at address 0x10215f018
+Freeing the chunk at address 0x102160018
+Freeing the chunk at address 0x102161018
+Freeing the chunk at address 0x102162018
+Freeing the chunk at address 0x102163018
+
+--------------------------------------------------------------
+no heapAllocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+
+--------------------------------------------------------------
+0 | current addr: 0x102164000 |size: 4096 | info: 1 | next: 0x102165000 | prev: 0x0
+1 | current addr: 0x102165000 |size: 4096 | info: 1 | next: 0x0 | prev: 0x102164000
+program break on address: 0x102166000
+Freeing the chunk at address 0x102164018
+
+--------------------------------------------------------------
+0 | current addr: 0x102164000 |size: 4096 | info: 0 | next: 0x102165000 | prev: 0x0
+1 | current addr: 0x102165000 |size: 4096 | info: 1 | next: 0x0 | prev: 0x102164000
+program break on address: 0x102166000
+
+--------------------------------------------------------------
+0 | current addr: 0x102164000 |size: 4096 | info: 1 | next: 0x102165000 | prev: 0x0
+1 | current addr: 0x102165000 |size: 4096 | info: 1 | next: 0x0 | prev: 0x102164000
+program break on address: 0x102166000
+Freeing the chunk at address 0x102165018
+
+--------------------------------------------------------------
+0 | current addr: 0x102164000 |size: 4096 | info: 1 | next: 0x0 | prev: 0x0
+program break on address: 0x102166000
+Freeing the chunk at address 0x102164018
+
+--------------------------------------------------------------
+no heapAllocating 100 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 12288 bytes
+No suitable chunk found, extending the heap by 16384 bytes
+Allocating 100 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 8182 bytes
+No suitable chunk found, extending the heap by 12288 bytes
+Allocating 100 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 100 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 100 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+
+--------------------------------------------------------------
+0 | current addr: 0x102166000 |size: 20480 | info: 1 | next: 0x10216b000 | prev: 0x0
+1 | current addr: 0x10216b000 |size: 4096 | info: 1 | next: 0x10216c000 | prev: 0x102166000
+2 | current addr: 0x10216c000 |size: 16384 | info: 1 | next: 0x102170000 | prev: 0x10216b000
+3 | current addr: 0x102170000 |size: 4096 | info: 1 | next: 0x102171000 | prev: 0x10216c000
+4 | current addr: 0x102171000 |size: 12288 | info: 1 | next: 0x102174000 | prev: 0x102170000
+5 | current addr: 0x102174000 |size: 4096 | info: 1 | next: 0x102175000 | prev: 0x102171000
+6 | current addr: 0x102175000 |size: 4096 | info: 1 | next: 0x102176000 | prev: 0x102174000
+7 | current addr: 0x102176000 |size: 4096 | info: 1 | next: 0x0 | prev: 0x102175000
+program break on address: 0x102177000
+Freeing the chunk at address 0x102166018
+Freeing the chunk at address 0x10216c018
+Freeing the chunk at address 0x102171018
+Freeing the chunk at address 0x102175018
+
+--------------------------------------------------------------
+0 | current addr: 0x102166000 |size: 20480 | info: 0 | next: 0x10216b000 | prev: 0x0
+1 | current addr: 0x10216b000 |size: 4096 | info: 1 | next: 0x10216c000 | prev: 0x102166000
+2 | current addr: 0x10216c000 |size: 16384 | info: 0 | next: 0x102170000 | prev: 0x10216b000
+3 | current addr: 0x102170000 |size: 4096 | info: 1 | next: 0x102171000 | prev: 0x10216c000
+4 | current addr: 0x102171000 |size: 12288 | info: 0 | next: 0x102174000 | prev: 0x102170000
+5 | current addr: 0x102174000 |size: 4096 | info: 1 | next: 0x102175000 | prev: 0x102171000
+6 | current addr: 0x102175000 |size: 4096 | info: 0 | next: 0x102176000 | prev: 0x102174000
+7 | current addr: 0x102176000 |size: 4096 | info: 1 | next: 0x0 | prev: 0x102175000
+program break on address: 0x102177000
+
+--------------------------------------------------------------
+0 | current addr: 0x102166000 |size: 20480 | info: 0 | next: 0x10216b000 | prev: 0x0
+1 | current addr: 0x10216b000 |size: 4096 | info: 1 | next: 0x10216c000 | prev: 0x102166000
+2 | current addr: 0x10216c000 |size: 16384 | info: 0 | next: 0x102170000 | prev: 0x10216b000
+3 | current addr: 0x102170000 |size: 4096 | info: 1 | next: 0x102171000 | prev: 0x10216c000
+4 | current addr: 0x102171000 |size: 12288 | info: 0 | next: 0x102174000 | prev: 0x102170000
+5 | current addr: 0x102174000 |size: 4096 | info: 1 | next: 0x102175000 | prev: 0x102171000
+6 | current addr: 0x102175000 |size: 4096 | info: 1 | next: 0x102176000 | prev: 0x102174000
+7 | current addr: 0x102176000 |size: 4096 | info: 1 | next: 0x0 | prev: 0x102175000
+program break on address: 0x102177000
+
+--------------------------------------------------------------
+0 | current addr: 0x102166000 |size: 20480 | info: 0 | next: 0x10216b000 | prev: 0x0
+1 | current addr: 0x10216b000 |size: 4096 | info: 1 | next: 0x10216c000 | prev: 0x102166000
+2 | current addr: 0x10216c000 |size: 16384 | info: 0 | next: 0x102170000 | prev: 0x10216b000
+3 | current addr: 0x102170000 |size: 4096 | info: 1 | next: 0x102172000 | prev: 0x10216c000
+4 | current addr: 0x102172000 |size: 8192 | info: 0 | next: 0x102171000 | prev: 0x102170000
+5 | current addr: 0x102171000 |size: 4096 | info: 1 | next: 0x102174000 | prev: 0x102172000
+6 | current addr: 0x102174000 |size: 4096 | info: 1 | next: 0x102175000 | prev: 0x102171000
+7 | current addr: 0x102175000 |size: 4096 | info: 1 | next: 0x102176000 | prev: 0x102174000
+8 | current addr: 0x102176000 |size: 4096 | info: 1 | next: 0x0 | prev: 0x102175000
+program break on address: 0x102177000
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Allocating 1000 bytes
+No suitable chunk found, extending the heap by 4096 bytes
+Freeing the chunk at address 0x102172018
+Freeing the chunk at address 0x10216c018
+Freeing the chunk at address 0x10216d018
+Freeing the chunk at address 0x10216e018
+Freeing the chunk at address 0x102166018
+Freeing the chunk at address 0x102177018
+Freeing the chunk at address 0x102178018
+Freeing the chunk at address 0x102179018
+Freeing the chunk at address 0x10217a018
+Freeing the chunk at address 0x10217b018
+Freeing the chunk at address 0x10217c018
+Freeing the chunk at address 0x10217d018
+Freeing the chunk at address 0x10217e018
+Freeing the chunk at address 0x10217f018
+Freeing the chunk at address 0x102180018
+Freeing the chunk at address 0x102181018
+Freeing the chunk at address 0x102182018
+Freeing the chunk at address 0x102183018
+Freeing the chunk at address 0x102184018
+Freeing the chunk at address 0x102185018
+Freeing the chunk at address 0x102186018
+Freeing the chunk at address 0x102187018
+Freeing the chunk at address 0x102188018
+Freeing the chunk at address 0x102189018
+Freeing the chunk at address 0x10218a018
+Freeing the chunk at address 0x10218b018
+Freeing the chunk at address 0x10218c018
+Freeing the chunk at address 0x10218d018
+Freeing the chunk at address 0x10218e018
+Freeing the chunk at address 0x10218f018
+Freeing the chunk at address 0x102190018
+Freeing the chunk at address 0x102191018
+Freeing the chunk at address 0x102192018
+Freeing the chunk at address 0x102193018
+Freeing the chunk at address 0x102194018
+Freeing the chunk at address 0x102195018
+Freeing the chunk at address 0x102196018
+Freeing the chunk at address 0x102197018
+Freeing the chunk at address 0x102198018
+Freeing the chunk at address 0x102199018
+Freeing the chunk at address 0x10219a018
+Freeing the chunk at address 0x10219b018
+Freeing the chunk at address 0x10219c018
+Freeing the chunk at address 0x10219d018
+Freeing the chunk at address 0x10219e018
+Freeing the chunk at address 0x10219f018
+Freeing the chunk at address 0x1021a0018
+Freeing the chunk at address 0x1021a1018
+Freeing the chunk at address 0x1021a2018
+Freeing the chunk at address 0x1021a3018
+Freeing the chunk at address 0x1021a4018
+Freeing the chunk at address 0x1021a5018
+Freeing the chunk at address 0x1021a6018
+Freeing the chunk at address 0x1021a7018
+Freeing the chunk at address 0x1021a8018
+Freeing the chunk at address 0x1021a9018
+Freeing the chunk at address 0x1021aa018
+Freeing the chunk at address 0x1021ab018
+Freeing the chunk at address 0x1021ac018
+Freeing the chunk at address 0x1021ad018
+Freeing the chunk at address 0x1021ae018
+Freeing the chunk at address 0x1021af018
+Freeing the chunk at address 0x1021b0018
+Freeing the chunk at address 0x1021b1018
+Freeing the chunk at address 0x1021b2018
+Freeing the chunk at address 0x1021b3018
+Freeing the chunk at address 0x1021b4018
+Freeing the chunk at address 0x1021b5018
+Freeing the chunk at address 0x1021b6018
+Freeing the chunk at address 0x1021b7018
+Freeing the chunk at address 0x1021b8018
+Freeing the chunk at address 0x1021b9018
+Freeing the chunk at address 0x1021ba018
+Freeing the chunk at address 0x1021bb018
+Freeing the chunk at address 0x1021bc018
+Freeing the chunk at address 0x1021bd018
+Freeing the chunk at address 0x1021be018
+Freeing the chunk at address 0x1021bf018
+Freeing the chunk at address 0x1021c0018
+Freeing the chunk at address 0x1021c1018
+Freeing the chunk at address 0x1021c2018
+Freeing the chunk at address 0x1021c3018
+Freeing the chunk at address 0x1021c4018
+Freeing the chunk at address 0x1021c5018
+Freeing the chunk at address 0x1021c6018
+Freeing the chunk at address 0x1021c7018
+Freeing the chunk at address 0x1021c8018
+Freeing the chunk at address 0x1021c9018
+Freeing the chunk at address 0x1021ca018
+Freeing the chunk at address 0x1021cb018
+Freeing the chunk at address 0x1021d1018
+Freeing the chunk at address 0x1021cc018
+Freeing the chunk at address 0x1021cd018
+Freeing the chunk at address 0x1021ce018
+Freeing the chunk at address 0x1021cf018
+Freeing the chunk at address 0x1021d0018
+Freeing the chunk at address 0x102166018
+Freeing the chunk at address 0x1021d2018
+Freeing the chunk at address 0x1021d3018
+Freeing the chunk at address 0x1021d4018
+Freeing the chunk at address 0x1021d5018
+
+duration: 0.000289
