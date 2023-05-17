@@ -1,0 +1,54 @@
+
+Assignment 2:
+
+Cant go over the pixels using 1 image
+
+New update to assignment 2 
+
+If you have 2 images different sizes
+
+Take the smaller image 
+
+
+for(x: width)
+  for(y: height)
+
+
+{
+Rb = 
+Gb=
+Bb=
+
+2 dimension image stored in a 1 dimension array
+
+If width %3 #4 is 0, there will be padding g
+
+datasmall[XS, ys]
+
+Function could be totally working, f(x1(wb1, ws)
+
+X returned could be wrong, catch excess x with a condition 
+
+R = A(1-t)+B*t
+T \varepsilon[0,1]
+
+Be careful about offset
+
+BiLinear Interpolation
+
+Line padding
+
+Testing:
+
+1. Mix lion & jar jar testing (no line padding, different sizes)
+2. Mix anything with flowers
+3. Implement BiLin
+
+
+60% if your program works at least for images with different size but without line padding (e.g.
+lion, jarjar).
+25% if your program works for images with line padding (e.g. flowers)
+25% if your program works with arbitrary resolutions and bilinear interpolation.
+
+./ARNE_assignment2 images/tunnel.bmp images/flowers.bmp 0.5 merged3.bmp
+
