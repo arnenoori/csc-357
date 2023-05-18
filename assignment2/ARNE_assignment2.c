@@ -7,6 +7,7 @@ typedef unsigned short WORD;
 typedef unsigned int DWORD;
 typedef unsigned int LONG;
 
+#pragma pack(push, 1)
 typedef struct tagBITMAPFILEHEADER
     {
     WORD bfType; //specifies the file type
@@ -30,6 +31,8 @@ typedef struct tagBITMAPINFOHEADER
     DWORD biClrUsed; //number of colors used by th ebitmap 
     DWORD biClrImportant; //number of colors that are important
     } BITMAPINFOHEADER;
+
+#pragma pack(pop)
 
 typedef struct tagRGBTRIPLE
     {
@@ -98,6 +101,10 @@ RGBTRIPLE *read_bmp(char *filename, BITMAPFILEHEADER *bf, BITMAPINFOHEADER *bi)
 
     fread(bf, sizeof(BITMAPFILEHEADER), 1, file);
     fread(bi, sizeof(BITMAPINFOHEADER), 1, file);
+
+    // Print the bfType and biBitCount values
+    printf("bfType: %u\n", bf->bfType);
+    printf("biBitCount: %u\n", bi->biBitCount);
 
     if (bf->bfType != 0x4D42 || bi->biBitCount != 24)
         {
@@ -252,7 +259,7 @@ int main(int argc, char *argv[])
 
     25% if your program works with arbitrary resolutions and bilinear interpolation.
 
-    ./ARNE_assignment2 images/flowers.bmp images/tunnel.bmp 0.6 images/merged/merged3.bmp
+    ./ARNE_assignment2 images/jar.bmp images/1UP.bmp 0.6 images/merged/merged3.bmp
     
     */
 

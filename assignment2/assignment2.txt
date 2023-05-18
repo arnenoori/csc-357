@@ -52,3 +52,19 @@ lion, jarjar).
 
 ./ARNE_assignment2 images/tunnel.bmp images/flowers.bmp 0.5 merged3.bmp
 
+
+bilinear_interpolation -> linear interpolation in two dimensions
+
+P(1) -> P(0.6)
+
+? = 2/3 w_s -1/w_b -1
+
+xs = x(ws_1/w_b-1)
+
+0.0 = 1 2/3
+
+i1 = (int)x_s
+12 = i_1+1
+
+dx = xs_(int)x_s // there must be float
+
