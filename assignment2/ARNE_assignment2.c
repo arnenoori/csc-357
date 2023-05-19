@@ -65,7 +65,7 @@ RGBTRIPLE blend_colors(RGBTRIPLE color1, RGBTRIPLE color2, float ratio)
 
 
 RGBTRIPLE bilinear_interpolation(RGBTRIPLE *image, float x, float y, int width, int height)
-{
+    {
     int x1 = (int)x;
     int y1 = (int)y;
     int x2 = x1 + 1 < width ? x1 + 1 : x1;
@@ -87,18 +87,12 @@ RGBTRIPLE bilinear_interpolation(RGBTRIPLE *image, float x, float y, int width, 
     result.rgbtRed = (q11.rgbtRed * r1 + q21.rgbtRed * r2) * t1 + (q12.rgbtRed * r1 + q22.rgbtRed * r2) * t2;
 
     return result;
-}
-
+    }
 
 
 RGBTRIPLE *read_bmp(char *filename, BITMAPFILEHEADER *bf, BITMAPINFOHEADER *bi)
     {
     FILE *file = fopen(filename, "rb");
-    if (!file)
-        {
-        printf("Could not open file %s.\n", filename);
-        return NULL;
-        }
 
     fread(bf, sizeof(BITMAPFILEHEADER), 1, file);
     fread(bi, sizeof(BITMAPINFOHEADER), 1, file);
@@ -117,12 +111,6 @@ RGBTRIPLE *read_bmp(char *filename, BITMAPFILEHEADER *bf, BITMAPINFOHEADER *bi)
     int padding = (4 - (bi->biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
 
     RGBTRIPLE *image = malloc(bi->biWidth * bi->biHeight * sizeof(RGBTRIPLE));
-    if (!image)
-        {
-        printf("Could not allocate memory for image data.\n");
-        fclose(file);
-        return NULL;
-        }
 
     fseek(file, bf->bfOffBits, SEEK_SET);
     for (int i = 0; i < bi->biHeight; i++)
@@ -139,11 +127,6 @@ RGBTRIPLE *read_bmp(char *filename, BITMAPFILEHEADER *bf, BITMAPINFOHEADER *bi)
 void write_bmp(char *filename, BITMAPFILEHEADER *bf, BITMAPINFOHEADER *bi, RGBTRIPLE *image)
     {
     FILE *file = fopen(filename, "wb");
-    if (!file)
-        {
-        printf("Could not open file %s for writing.\n", filename);
-        return;
-        }
 
     fwrite(bf, sizeof(BITMAPFILEHEADER), 1, file);
     fwrite(bi, sizeof(BITMAPINFOHEADER), 1, file);
@@ -176,18 +159,6 @@ int main(int argc, char *argv[])
     BITMAPINFOHEADER bi1, bi2;
     RGBTRIPLE *image1 = read_bmp(imagefile1, &bf1, &bi1);
     RGBTRIPLE *image2 = read_bmp(imagefile2, &bf2, &bi2);
-
-    // checks if files exist and are in right format
-    if (!image1 || !image2) 
-        {
-        return 1;
-        }
-
-    if (ratio < 0 || ratio > 1)
-        {
-        printf("Ratio must be between 0 and 1.\n");
-        return 1;
-        }
 
     // compute the dimensions of the output image
     int out_width = bi1.biWidth > bi2.biWidth ? bi1.biWidth : bi2.biWidth;
@@ -228,7 +199,7 @@ int main(int argc, char *argv[])
         }
 
 
-    // Prepare the headers for the output file
+    // prepare the headers for the output file
     BITMAPFILEHEADER out_bf;
     BITMAPINFOHEADER out_bi;
     memcpy(&out_bf, &bf1, sizeof(BITMAPFILEHEADER));
