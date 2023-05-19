@@ -65,7 +65,7 @@ RGBTRIPLE blend_colors(RGBTRIPLE color1, RGBTRIPLE color2, float ratio)
 
 
 RGBTRIPLE bilinear_interpolation(RGBTRIPLE *image, float x, float y, int width, int height)
-    {
+{
     int x1 = (int)x;
     int y1 = (int)y;
     int x2 = x1 + 1 < width ? x1 + 1 : x1;
@@ -76,10 +76,10 @@ RGBTRIPLE bilinear_interpolation(RGBTRIPLE *image, float x, float y, int width, 
     RGBTRIPLE q21 = get_pixel(image, x2, y1, width);
     RGBTRIPLE q22 = get_pixel(image, x2, y2, width);
 
-    float r1 = x2 - x;
-    float r2 = x - x1;
-    float t1 = y2 - y;
-    float t2 = y - y1;
+    float r1 = x2 == x1 ? 0 : x2 - x;
+    float r2 = x2 == x1 ? 1 : x - x1;
+    float t1 = y2 == y1 ? 0 : y2 - y;
+    float t2 = y2 == y1 ? 1 : y - y1;
 
     RGBTRIPLE result;
     result.rgbtBlue = (q11.rgbtBlue * r1 + q21.rgbtBlue * r2) * t1 + (q12.rgbtBlue * r1 + q22.rgbtBlue * r2) * t2;
@@ -87,7 +87,8 @@ RGBTRIPLE bilinear_interpolation(RGBTRIPLE *image, float x, float y, int width, 
     result.rgbtRed = (q11.rgbtRed * r1 + q21.rgbtRed * r2) * t1 + (q12.rgbtRed * r1 + q22.rgbtRed * r2) * t2;
 
     return result;
-    }
+}
+
 
 
 RGBTRIPLE *read_bmp(char *filename, BITMAPFILEHEADER *bf, BITMAPINFOHEADER *bi)
@@ -102,7 +103,7 @@ RGBTRIPLE *read_bmp(char *filename, BITMAPFILEHEADER *bf, BITMAPINFOHEADER *bi)
     fread(bf, sizeof(BITMAPFILEHEADER), 1, file);
     fread(bi, sizeof(BITMAPINFOHEADER), 1, file);
 
-    // Print the bfType and biBitCount values
+    // print the bfType and biBitCount values
     printf("bfType: %u\n", bf->bfType);
     printf("biBitCount: %u\n", bi->biBitCount);
 
