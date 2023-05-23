@@ -11,7 +11,7 @@
 
 #define MAX_CHILDREN 10
 
-// Structure to hold the child process information
+// holds the child process information
 typedef struct
 {
     pid_t pid;
@@ -21,6 +21,7 @@ typedef struct
 
 ChildProcess children[MAX_CHILDREN];
 int child_count = 0;
+
 
 void find_file(char *filename, char *startdirectory, int search_in_all_subdirectories, int pipefd)
 {
@@ -56,11 +57,9 @@ void find_file(char *filename, char *startdirectory, int search_in_all_subdirect
     }
     closedir(dir);
 
-    if (!file_found)
+    if (!file_found && !search_in_all_subdirectories)
         dprintf(pipefd, "File not found.\n");
 }
-
-
 
 
 void handle_child(int signal)
@@ -68,30 +67,31 @@ void handle_child(int signal)
     pid_t pid;
     int status;
 
-    // Wait for any child process
+    // wait for any child process
     while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
     {
-        // Find child in the children array and remove it
+        // find child in the children array and remove it
         for (int i = 0; i < child_count; i++)
         {
             if (children[i].pid == pid)
             {
-                // Set terminated flag to true
+                // set terminated flag to true
                 children[i].terminated = true;
 
-                // Remove child from the array by moving all subsequent elements one step to the left
+                // remove child from the array by moving all subsequent elements one step to the left
                 for (int j = i; j < child_count - 1; j++)
                 {
                     children[j] = children[j + 1];
                 }
 
-                // Decrease the child count
+                // decrease the child count
                 child_count--;
                 break;
             }
         }
     }
 }
+
 
 void spawn_child(char *filename, char *startdirectory, int search_in_all_subdirectories)
 {
@@ -102,44 +102,51 @@ void spawn_child(char *filename, char *startdirectory, int search_in_all_subdire
     }
 
     pid_t pid;
-    int pipefd[2] = {-1, -1}; // Initialize pipefd to -1
+    int pipefd[2] = {-1, -1};
 
-    // Create the pipe
+    // create the pipe
     if (pipe(pipefd) == -1)
     {
         perror("pipe");
         return;
     }
 
-    // Create the child process
+    // create the child process
     pid = fork();
     if (pid == -1)
     {
         perror("fork");
-        close(pipefd[0]); // Close pipe if fork fails
+        close(pipefd[0]); // closes pipe if fork fails
         close(pipefd[1]);
         return;
     }
 
     if (pid == 0)
     {
-        // Child process
-        close(pipefd[0]); // Close read end of the pipe
+        // child process close read end of the pipe
+        close(pipefd[0]);
+
+        // change startdirectory to root directory if -f flag is specified
+        if (search_in_all_subdirectories)
+            strcpy(startdirectory, "/");
+
         find_file(filename, startdirectory, search_in_all_subdirectories, pipefd[1]);
-        close(pipefd[1]); // Close write end of the pipe
+        close(pipefd[1]); // close write end of the pipe
         exit(0);
     }
     else
     {
-        // Parent process
-        close(pipefd[1]); // Close write end of the pipe
+        // parent process
+        close(pipefd[1]); // close write end of the pipe
         children[child_count].pid = pid;
         children[child_count].pipefd[0] = pipefd[0];
         children[child_count].pipefd[1] = pipefd[1];
-        children[child_count].terminated = false; // Initialize terminated flag
+        children[child_count].terminated = false; // initialize terminated flag
         child_count++;
     }
 }
+
+
 int process_command(char *command)
 {
     char *filename;
@@ -148,14 +155,14 @@ int process_command(char *command)
     int search_in_all_subdirectories = 0;
     char startdirectory[1024];
 
-    // Get the current working directory
+    // get the current working directory
     if (getcwd(startdirectory, sizeof(startdirectory)) == NULL)
     {
         perror("getcwd");
         return 0;
     }
 
-    // Parse the command
+    // parse the command
     token = strtok(command, " ");
     if (token == NULL)
     {
@@ -165,7 +172,7 @@ int process_command(char *command)
 
     if (strcmp(token, "quit") == 0 || strcmp(token, "q") == 0)
     {
-        // Terminate all child processes
+        // terminate all child processes
         for (int i = 0; i < child_count; i++)
         {
             kill(children[i].pid, SIGTERM);
@@ -173,13 +180,13 @@ int process_command(char *command)
         return -1;
     }
 
-    if (token == NULL || strcmp(token, "find") != 0)
+    if (strcmp(token, "find") != 0)
     {
         printf("Invalid command.\n");
         return 0;
     }
 
-    // Get the filename
+    // get the filename
     token = strtok(NULL, " ");
     if (token == NULL)
     {
@@ -188,7 +195,7 @@ int process_command(char *command)
     }
     filename = token;
 
-    // Get the flag
+    // get the flag
     token = strtok(NULL, " ");
     if (token != NULL)
     {
@@ -198,7 +205,7 @@ int process_command(char *command)
         }
         else if (strcmp(token, "-f") == 0)
         {
-            strcat(startdirectory, "/"); // Append "/" to the startdirectory
+            strcpy(startdirectory, "/");
             search_in_all_subdirectories = 1;
         }
         else
@@ -208,11 +215,12 @@ int process_command(char *command)
         }
     }
 
-    // Spawn child process
+    // spawn child process
     spawn_child(filename, startdirectory, search_in_all_subdirectories);
 
     return 0;
 }
+
 
 int main()
 {
@@ -226,23 +234,23 @@ int main()
         exit(1);
     }
 
-    usleep(1000); // Delay for 1 millisecond
+    usleep(1000);
 
-    // Main loop
+    // main loop
     char command[256];
     while (1)
     {
         fd_set readfds;
         FD_ZERO(&readfds);
 
-        // Add standard input to the set
+        // add standard input to the set
         FD_SET(STDIN_FILENO, &readfds);
         int maxfd = STDIN_FILENO;
 
-        // Add pipes to the set
+        // add pipes to the set
         for (int i = 0; i < child_count; i++)
         {
-            if (children[i].pipefd[0] != -1) // Check if pipefd[0] is not -1
+            if (children[i].pipefd[0] != -1)
             {
                 FD_SET(children[i].pipefd[0], &readfds);
                 if (children[i].pipefd[0] > maxfd)
@@ -261,13 +269,12 @@ int main()
 
         if (FD_ISSET(STDIN_FILENO, &readfds))
         {
-            // Print the command prompt
+            // print the command prompt
             printf("findstuff$ ");
             fflush(stdout);
 
-            // Handle user input
+            // handle user input
             fgets(command, sizeof(command), stdin);
-            // Remove newline character
             command[strcspn(command, "\n")] = '\0';
             if (process_command(command) == -1)
             {
@@ -276,12 +283,12 @@ int main()
         }
         else
         {
-            // Handle child process message
+            // handle child process message
             for (int i = 0; i < child_count; i++)
             {
-                if (children[i].pipefd[0] != -1 && FD_ISSET(children[i].pipefd[0], &readfds)) // Ensure the file descriptor is not -1
+                if (children[i].pipefd[0] != -1 && FD_ISSET(children[i].pipefd[0], &readfds)) // ensure the file descriptor is not -1
                 {
-                    // Read and print the message
+                    // read and print the message
                     char buffer[1024];
                     ssize_t len = read(children[i].pipefd[0], buffer, sizeof(buffer) - 1);
                     if (len > 0)
@@ -299,9 +306,25 @@ int main()
 
 /*
 
+Running it:
+
 gcc ARNE_assignment3.c -o findfile
 ./findfile
-findstuff$ find assignment3.txt -s
+
+Testing: 
+
+Within folder:
+find assignment3.txt
+
+Testing file not found:
+find jar.jpg
+
+Testing subfolder:
+
+find jar.jpg -s
+
+All directories:
+find test.c -f
 
 q
 
