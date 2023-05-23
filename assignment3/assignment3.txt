@@ -1,0 +1,225 @@
+Very similiar to lab 4, shouldn't be too hard if you understand that
+
+
+for(j i) 
+{
+    read()
+    pause()
+    {
+        fork()
+        {
+            find a specific file
+            before when the kid is done pid, tells the parents that there is a pid waiting for you
+        }
+    }
+
+}
+
+things to keep in mind:
+parent desolves the process, pid
+
+
+opendir
+
+readdir
+
+closedir
+
+pseudocode:
+
+getcwd()
+searchfile(char *path) // character array ~5000 characters catching all the files names
+
+you have a structure like a filestructure
+DIR *dir = opendir(path);
+while(dirent = readdir(dir))
+{
+    if()...// string cat into this container, if the names match when you have to store that information somewhere, you could do it nicely by sorting since the subfolder can be anywhere
+    // be careful of long file names
+    if(dirent is subfolder) // need to find a file in a subfolder, find file including all subdirectories
+       searchfile(path+"/"+sub); // recurisvely in a subfolder
+}
+closedir(dir);
+
+
+use the manual pages for opendir
+
+
+chartxt[100]
+strcat(txt, "a");
+
+----------------------------------------
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <stdint.h>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <dirent.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <fcntl.h>
+
+// using namespace std;
+
+void showstat(char *filepath)
+
+struct dirent {
+    ino_t          d_ino;       /* inode number */
+    off_t          d_off;       /* offset to the next dirent */
+    unsigned short d_reclen;    /* length of this record */
+    unsigned char  d_type;      /* type of file; not supported
+                                   by all file system types */
+    char           d_name[256]; /* filename */
+};
+
+int main()
+{
+struct stat statstruct;
+int ret = stat("launch.json", &statstruct);
+
+DIR *dir = open(".");
+for(dirent *de = readdir(dir);de;de = readdir(dir))
+{
+    cout << de -> d_name;
+    if(de->d_type == DT.REG) cout << "    [file]" << endl;
+    if(de->d_type == DT.DIR) cout << "    [folder]" << endl;
+    
+}
+closedir(dir);
+
+
+// file needs to be at least 4k big if they have just a couple of bytes they will be increased to 4k bytes
+
+
+printf("ID of containing device:  [%jx,%jx]\n",
+                   (uintmax_t) major(sb.st_dev),
+                   (uintmax_t) minor(sb.st_dev));
+
+           printf("File type:                ");
+
+           switch (sb.st_mode & S_IFMT) {
+           case S_IFBLK:  printf("block device\n");            break;
+           case S_IFCHR:  printf("character device\n");        break;
+           case S_IFDIR:  printf("directory\n");               break;
+           case S_IFIFO:  printf("FIFO/pipe\n");               break;
+           case S_IFLNK:  printf("symlink\n");                 break;
+           case S_IFREG:  printf("regular file\n");            break;
+           case S_IFSOCK: printf("socket\n");                  break;
+           default:       printf("unknown?\n");                break;
+           }
+
+printf("I-node number:            %ju\n", (uintmax_t) sb.st_ino);
+
+           printf("Mode:                     %jo (octal)\n",
+                   (uintmax_t) sb.st_mode);
+
+           printf("Link count:               %ju\n", (uintmax_t) sb.st_nlink);
+           printf("Ownership:                UID=%ju   GID=%ju\n",
+                   (uintmax_t) sb.st_uid, (uintmax_t) sb.st_gid);
+
+           printf("Preferred I/O block size: %jd bytes\n",
+                   (intmax_t) sb.st_blksize);
+           printf("File size:                %jd bytes\n",
+                   (intmax_t) sb.st_size);
+           printf("Blocks allocated:         %jd\n",
+                   (intmax_t) sb.st_blocks);
+
+           printf("Last status change:       %s", ctime(&sb.st_ctime));
+           printf("Last file access:         %s", ctime(&sb.st_atime));
+           printf("Last file modification:   %s", ctime(&sb.st_mtime));
+
+           exit(EXIT_SUCCESS);
+
+
+    char workdir[1000]; // path will never exceed 1000 characters
+    getcwd(workdir, 1000);
+    cout << workdir << endl;
+
+    DIR *dir;
+    struct dirent *entry; 
+    dir = opendir(".");
+    if(dir == NULL) {cout << "bad case" << endl; return 0;}
+    for(entry = readdir(dir); entry != NULL; entry = readdir(dir)) 
+    {
+        cout << "_____________________________________________________" << endl;
+        cout << entry ->d_name << endl;
+        showstat(entry-> d_name);
+        
+    }
+
+    return 0;
+}
+
+void show(char *filepath) 
+{
+
+
+}
+
+// how to go into subdirectories put it into  a function and do it recurively. 
+
+
+
+void update_text(char *text) {
+    printf("!%s!\n", text);
+}
+
+void activity_detected(int sig) {
+}
+
+int main() {
+    int main_pipe[2];
+    pipe(main_pipe); // create pipe before the fork
+    fcntl(main_pipe[0], F_SETFL, O_NONBLOCK);
+    fcntl(main_pipe[1], F_SETFL, O_NONBLOCK);
+
+    pid_t pid = fork();
+    if (pid == 0) { // child process
+        close(main_pipe[1]); // close write end of the pipe
+
+        while (1) {
+            sleep(10); // child becomes inactive for 10 seconds
+
+            char buffer[2];
+            int bytesRead = read(main_pipe[0], buffer, 1);
+            if (bytesRead <= 0) {
+                printf("Inactivity detected!\n");
+            }
+        }
+    } else if (pid > 0) { // parent process
+        close(main_pipe[0]); // close read end of the pipe
+        signal(SIGUSR1, activity_detected);
+        char text[256];
+
+        while (1) {
+            fgets(text, sizeof(text), stdin);
+            text[strcspn(text, "\n")] = 0; // remove the newline character
+
+            if (strcmp(text, "quit") == 0) { // quit functionality
+                kill(pid, SIGTERM);
+                wait(NULL);
+                break;
+            }
+            update_text(text); // updates the output
+            write(main_pipe[1], "1", 1);
+        }
+    } else {
+        perror("fork");
+        exit(1);
+    }
+
+    return 0;
+}
+
+////////////////
