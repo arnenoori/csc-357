@@ -3,8 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include <dirent.h>
 #include <signal.h>
+#include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdbool.h>
@@ -62,6 +62,7 @@ void find_file(char *filename, char *startdirectory, int search_in_all_subdirect
 }
 
 
+// function uses waitpid
 void handle_child(int signal)
 {
     pid_t pid;
@@ -75,7 +76,6 @@ void handle_child(int signal)
         {
             if (children[i].pid == pid)
             {
-                // set terminated flag to true
                 children[i].terminated = true;
 
                 // remove child from the array by moving all subsequent elements one step to the left
@@ -84,7 +84,6 @@ void handle_child(int signal)
                     children[j] = children[j + 1];
                 }
 
-                // decrease the child count
                 child_count--;
                 break;
             }
@@ -116,17 +115,17 @@ void spawn_child(char *filename, char *startdirectory, int search_in_all_subdire
     if (pid == -1)
     {
         perror("fork");
-        close(pipefd[0]); // closes pipe if fork fails
+        close(pipefd[0]);
         close(pipefd[1]);
         return;
     }
 
     if (pid == 0)
     {
-        // child process close read end of the pipe
+        // child process closes read end of the pipe
         close(pipefd[0]);
 
-        // change startdirectory to root directory if -f flag is specified
+        // change start directory to root directory if -f flag is specified
         if (search_in_all_subdirectories)
             strcpy(startdirectory, "/");
 
@@ -141,13 +140,13 @@ void spawn_child(char *filename, char *startdirectory, int search_in_all_subdire
         children[child_count].pid = pid;
         children[child_count].pipefd[0] = pipefd[0];
         children[child_count].pipefd[1] = pipefd[1];
-        children[child_count].terminated = false; // initialize terminated flag
+        children[child_count].terminated = false;
         child_count++;
     }
 }
 
 
-int process_command(char *command)
+int parsing_function(char *command)
 {
     char *filename;
     char *flag;
@@ -224,6 +223,26 @@ int process_command(char *command)
 
 int main()
 {
+    /*
+    // UNCOMMENT THIS IF YOU WANT TO TEST FROM A FILE INSTEAD OF MANUALLY
+    FILE *fp = fopen("testing.txt", "r");
+    if (fp == NULL)
+    {
+        perror("Failed to open file");
+        return 1;
+    }
+
+    // redirect stdin to the file
+    if (dup2(fileno(fp), STDIN_FILENO) == -1)
+    {
+        perror("Failed to redirect stdin");
+        return 1;
+    }
+
+    // closes the file as stdin duplicate
+    fclose(fp);
+    */
+   
     struct sigaction sa;
     sa.sa_handler = &handle_child;
     sigemptyset(&sa.sa_mask);
@@ -276,7 +295,7 @@ int main()
             // handle user input
             fgets(command, sizeof(command), stdin);
             command[strcspn(command, "\n")] = '\0';
-            if (process_command(command) == -1)
+            if (parsing_function(command) == -1)
             {
                 break;
             }
@@ -286,7 +305,7 @@ int main()
             // handle child process message
             for (int i = 0; i < child_count; i++)
             {
-                if (children[i].pipefd[0] != -1 && FD_ISSET(children[i].pipefd[0], &readfds)) // ensure the file descriptor is not -1
+                if (children[i].pipefd[0] != -1 && FD_ISSET(children[i].pipefd[0], &readfds))
                 {
                     // read and print the message
                     char buffer[1024];
@@ -304,14 +323,17 @@ int main()
     return 0;
 }
 
+
 /*
 
-Running it:
 
 gcc ARNE_assignment3.c -o findfile
 ./findfile
 
 Testing: 
+
+How he said to test: test with retrieving a larger/more hidden file and then a more local one
+right after, while the larger one is being found local one should put the output
 
 Within folder:
 find assignment3.txt
@@ -324,8 +346,11 @@ Testing subfolder:
 find jar.jpg -s
 
 All directories:
-find test.c -f
+find 3500.webp -f
 
 q
+
+waitpid, redirection to stdin needed
+
 
 */
