@@ -23,7 +23,7 @@ ChildProcess children[MAX_CHILDREN];
 int child_count = 0;
 
 
-void find_file(char *filename, char *startdirectory, int search_in_all_subdirectories, int pipefd)
+void find_file(char *filename, char *startdirectory, int search_in_all_subdirectories, int stdout_fd)
 {
     DIR *dir;
     struct dirent *entry;
@@ -42,7 +42,7 @@ void find_file(char *filename, char *startdirectory, int search_in_all_subdirect
             if (search_in_all_subdirectories)
             {
                 snprintf(path, sizeof(path), "%s/%s", startdirectory, entry->d_name);
-                find_file(filename, path, search_in_all_subdirectories, pipefd);
+                find_file(filename, path, search_in_all_subdirectories, stdout_fd);
             }
         }
         else
@@ -50,7 +50,7 @@ void find_file(char *filename, char *startdirectory, int search_in_all_subdirect
             if (strcmp(entry->d_name, filename) == 0)
             {
                 snprintf(path, sizeof(path), "%s/%s", startdirectory, entry->d_name);
-                dprintf(pipefd, "Found file: %s\n", path);
+                dprintf(stdout_fd, "Found file: %s\n", path);
                 file_found = true;
             }
         }
@@ -58,7 +58,7 @@ void find_file(char *filename, char *startdirectory, int search_in_all_subdirect
     closedir(dir);
 
     if (!file_found && !search_in_all_subdirectories)
-        dprintf(pipefd, "File not found.\n");
+        dprintf(stdout_fd, "File not found.\n");
 }
 
 
@@ -115,7 +115,7 @@ void spawn_child(char *filename, char *startdirectory, int search_in_all_subdire
     if (pid == -1)
     {
         perror("fork");
-        close(pipefd[0]);
+        close(pipefd[0]); // closes pipe if fork fails
         close(pipefd[1]);
         return;
     }
@@ -125,12 +125,19 @@ void spawn_child(char *filename, char *startdirectory, int search_in_all_subdire
         // child process closes read end of the pipe
         close(pipefd[0]);
 
-        // change start directory to root directory if -f flag is specified
+        // redirect the output to the write end of the pipe
+        if (dup2(pipefd[1], STDOUT_FILENO) == -1)
+        {
+            perror("Failed to redirect stdout of child");
+            exit(1);
+        }
+        close(pipefd[1]);
+
+        // change startdirectory to root directory if -f flag is specified
         if (search_in_all_subdirectories)
             strcpy(startdirectory, "/");
 
-        find_file(filename, startdirectory, search_in_all_subdirectories, pipefd[1]);
-        close(pipefd[1]); // close write end of the pipe
+        find_file(filename, startdirectory, search_in_all_subdirectories, STDOUT_FILENO);
         exit(0);
     }
     else
@@ -139,7 +146,7 @@ void spawn_child(char *filename, char *startdirectory, int search_in_all_subdire
         close(pipefd[1]); // close write end of the pipe
         children[child_count].pid = pid;
         children[child_count].pipefd[0] = pipefd[0];
-        children[child_count].pipefd[1] = pipefd[1];
+        children[child_count].pipefd[1] = -1; // write end of the pipe is no longer accessible
         children[child_count].terminated = false;
         child_count++;
     }
@@ -224,7 +231,7 @@ int parsing_function(char *command)
 int main()
 {
     /*
-    // UNCOMMENT THIS IF YOU WANT TO TEST FROM A FILE INSTEAD OF MANUALLY
+    // UNCOMMENT THIS IF YOU WANT TO TEST FROM A FILE INSTEAD OF INTERACTIVE OUTPUT
     FILE *fp = fopen("testing.txt", "r");
     if (fp == NULL)
     {
@@ -238,11 +245,9 @@ int main()
         perror("Failed to redirect stdin");
         return 1;
     }
-
-    // closes the file as stdin duplicate
     fclose(fp);
     */
-   
+
     struct sigaction sa;
     sa.sa_handler = &handle_child;
     sigemptyset(&sa.sa_mask);
@@ -319,7 +324,7 @@ int main()
             }
         }
     }
-
+    
     return 0;
 }
 
