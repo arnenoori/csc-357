@@ -22,8 +22,10 @@ typedef struct
 ChildProcess children[MAX_CHILDREN];
 int child_count = 0;
 
+int input_pipe[2];
+int pid_pipe[2];
 
-void find_file(char *filename, char *startdirectory, int search_in_all_subdirectories, int stdout_fd)
+void find_file(char *filename, char *startdirectory, int search_in_all_subdirectories, int result)
 {
     DIR *dir;
     struct dirent *entry;
@@ -42,7 +44,7 @@ void find_file(char *filename, char *startdirectory, int search_in_all_subdirect
             if (search_in_all_subdirectories)
             {
                 snprintf(path, sizeof(path), "%s/%s", startdirectory, entry->d_name);
-                find_file(filename, path, search_in_all_subdirectories, stdout_fd);
+                find_file(filename, path, search_in_all_subdirectories, result);
             }
         }
         else
@@ -50,7 +52,7 @@ void find_file(char *filename, char *startdirectory, int search_in_all_subdirect
             if (strcmp(entry->d_name, filename) == 0)
             {
                 snprintf(path, sizeof(path), "%s/%s", startdirectory, entry->d_name);
-                dprintf(stdout_fd, "Found file: %s\n", path);
+                dprintf(result, "Found file: %s\n", path);
                 file_found = true;
             }
         }
@@ -58,7 +60,7 @@ void find_file(char *filename, char *startdirectory, int search_in_all_subdirect
     closedir(dir);
 
     if (!file_found && !search_in_all_subdirectories)
-        dprintf(stdout_fd, "File not found.\n");
+        dprintf(result, "File not found.\n");
 }
 
 
@@ -152,7 +154,6 @@ void spawn_child(char *filename, char *startdirectory, int search_in_all_subdire
     }
 }
 
-
 int parsing_function(char *command)
 {
     char *filename;
@@ -227,26 +228,21 @@ int parsing_function(char *command)
     return 0;
 }
 
+void signal_handler(int signal)
+{
+    dup2(input_pipe[0], STDIN_FILENO); // overwrite STDIN
+}
 
 int main()
 {
-    /*
-    // UNCOMMENT THIS IF YOU WANT TO TEST FROM A FILE INSTEAD OF INTERACTIVE OUTPUT
-    FILE *fp = fopen("testing.txt", "r");
-    if (fp == NULL)
-    {
-        perror("Failed to open file");
-        return 1;
-    }
 
-    // redirect stdin to the file
-    if (dup2(fileno(fp), STDIN_FILENO) == -1)
+    // create the pipes
+    if (pipe(input_pipe) == -1 || pipe(pid_pipe) == -1)
     {
-        perror("Failed to redirect stdin");
+        perror("pipe");
         return 1;
     }
-    fclose(fp);
-    */
+    int stdin_copy = dup(STDIN_FILENO);
 
     struct sigaction sa;
     sa.sa_handler = &handle_child;
@@ -260,10 +256,32 @@ int main()
 
     usleep(1000);
 
+    signal(SIGUSR1, signal_handler);
+
+    usleep(1000);
+
     // main loop
     char command[256];
     while (1)
     {
+        dup2(stdin_copy, STDIN_FILENO); // restore stdin
+
+        // print the command prompt
+        printf("findstuff$ ");
+        fflush(stdout);
+
+        // handle user input
+        fgets(command, sizeof(command), stdin);
+        command[strcspn(command, "\n")] = '\0';
+
+        // write user input to the input pipe
+        write(input_pipe[1], command, strlen(command) + 1);
+
+        if (parsing_function(command) == -1)
+        {
+            break;
+        }
+
         fd_set readfds;
         FD_ZERO(&readfds);
 
@@ -291,43 +309,25 @@ int main()
             break;
         }
 
-        if (FD_ISSET(STDIN_FILENO, &readfds))
+        // handle child process message
+        for (int i = 0; i < child_count; i++)
         {
-            // print the command prompt
-            printf("findstuff$ ");
-            fflush(stdout);
-
-            // handle user input
-            fgets(command, sizeof(command), stdin);
-            command[strcspn(command, "\n")] = '\0';
-            if (parsing_function(command) == -1)
+            if (children[i].pipefd[0] != -1 && FD_ISSET(children[i].pipefd[0], &readfds))
             {
-                break;
-            }
-        }
-        else
-        {
-            // handle child process message
-            for (int i = 0; i < child_count; i++)
-            {
-                if (children[i].pipefd[0] != -1 && FD_ISSET(children[i].pipefd[0], &readfds))
+                // read and print the message
+                char buffer[1024];
+                ssize_t len = read(children[i].pipefd[0], buffer, sizeof(buffer) - 1);
+                if (len > 0)
                 {
-                    // read and print the message
-                    char buffer[1024];
-                    ssize_t len = read(children[i].pipefd[0], buffer, sizeof(buffer) - 1);
-                    if (len > 0)
-                    {
-                        buffer[len] = '\0';
-                        printf("%s\n", buffer);
-                    }
+                    buffer[len] = '\0';
+                    printf("%s\n", buffer);
                 }
             }
         }
     }
-    
+
     return 0;
 }
-
 
 /*
 
@@ -341,7 +341,6 @@ How he said to test: test with retrieving a larger/more hidden file and then a m
 right after, while the larger one is being found local one should put the output
 
 Within folder:
-find assignment3.txt
 
 Testing file not found:
 find jar.jpg

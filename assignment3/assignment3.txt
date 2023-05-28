@@ -223,3 +223,47 @@ int main() {
 }
 
 ////////////////
+
+
+
+/*
+
+parse function needed - rename
+parse function is tells you which ufunction you need
+dir hello.c -s
+arg[0] [1] [2]
+argc = 3 (doesnt exist)
+
+int parse(char *s, char *arg, int c) {
+    int a=0, b=0;
+        int w=0;
+        for(int i=0; i<str(en(S); i++)) {
+            if(s[i] == '_") {
+                b=i;
+                if(w==c) {
+                    strncpy(arg, s*a, b-a) {
+                        return 1;
+                    }
+                }
+                a=b+1;
+                w++;
+            }
+        }
+}
+
+int i=0;
+for(i=0; i=4; i++) {
+    if(parse(s, arg[i], i) == 0)
+    break;
+}
+
+waitpid(pid, &.., WNOHANG) {
+    read
+    parse
+    "fid"
+    fork()
+    return
+    waitpid
+    restore sxdin
+}
+
