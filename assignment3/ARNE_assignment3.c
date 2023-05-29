@@ -16,14 +16,13 @@ typedef struct
 {
     pid_t pid;
     int pipefd[2];
+    int result_pipefd[2];
     bool terminated;
 } ChildProcess;
 
 ChildProcess children[MAX_CHILDREN];
 int child_count = 0;
 
-int input_pipe[2];
-int pid_pipe[2];
 
 void find_file(char *filename, char *startdirectory, int search_in_all_subdirectories, int result)
 {
@@ -52,7 +51,10 @@ void find_file(char *filename, char *startdirectory, int search_in_all_subdirect
             if (strcmp(entry->d_name, filename) == 0)
             {
                 snprintf(path, sizeof(path), "%s/%s", startdirectory, entry->d_name);
-                dprintf(result, "Found file: %s\n", path);
+                char result_string[1024];
+                snprintf(result_string, sizeof(result_string), "Found file: %s\n", path);
+                write(result, result_string, strlen(result_string));
+                kill(getppid(), SIGUSR1); // notify parent process
                 file_found = true;
             }
         }
@@ -60,7 +62,11 @@ void find_file(char *filename, char *startdirectory, int search_in_all_subdirect
     closedir(dir);
 
     if (!file_found && !search_in_all_subdirectories)
-        dprintf(result, "File not found.\n");
+        {
+            char result_string[1024] = "File not found.\n";
+            write(result, result_string, strlen(result_string));
+            kill(getppid(), SIGUSR1); // notify parent process
+        }
 }
 
 
@@ -93,6 +99,30 @@ void handle_child(int signal)
     }
 }
 
+void handle_result(int signal)
+{
+    char buffer[1024];
+    for (int i = 0; i < child_count; i++)
+    {
+        // read from result pipe if it has data
+        if (children[i].result_pipefd[0] != -1)
+        {
+            ssize_t len = read(children[i].result_pipefd[0], buffer, sizeof(buffer) - 1);
+            if (len > 0)
+            {
+                buffer[len] = '\0';
+                printf("%s", buffer);  // Remove the "Child PID found file" prefix
+            }
+
+            // Close the read end of the pipe
+            close(children[i].result_pipefd[0]);
+            children[i].result_pipefd[0] = -1;
+        }
+    }
+}
+
+
+
 
 void spawn_child(char *filename, char *startdirectory, int search_in_all_subdirectories)
 {
@@ -104,11 +134,19 @@ void spawn_child(char *filename, char *startdirectory, int search_in_all_subdire
 
     pid_t pid;
     int pipefd[2] = {-1, -1};
+    int result_pipefd[2] = {-1, -1}; // new pipe for results
 
     // create the pipe
     if (pipe(pipefd) == -1)
     {
         perror("pipe");
+        return;
+    }
+
+    // create the result pipe
+    if (pipe(result_pipefd) == -1)
+    {
+        perror("result pipe");
         return;
     }
 
@@ -119,6 +157,8 @@ void spawn_child(char *filename, char *startdirectory, int search_in_all_subdire
         perror("fork");
         close(pipefd[0]); // closes pipe if fork fails
         close(pipefd[1]);
+        close(result_pipefd[0]); // closes result pipe if fork fails
+        close(result_pipefd[1]);
         return;
     }
 
@@ -126,6 +166,7 @@ void spawn_child(char *filename, char *startdirectory, int search_in_all_subdire
     {
         // child process closes read end of the pipe
         close(pipefd[0]);
+        close(result_pipefd[0]); // child process closes read end of the result pipe
 
         // redirect the output to the write end of the pipe
         if (dup2(pipefd[1], STDOUT_FILENO) == -1)
@@ -139,16 +180,19 @@ void spawn_child(char *filename, char *startdirectory, int search_in_all_subdire
         if (search_in_all_subdirectories)
             strcpy(startdirectory, "/");
 
-        find_file(filename, startdirectory, search_in_all_subdirectories, STDOUT_FILENO);
+        find_file(filename, startdirectory, search_in_all_subdirectories, result_pipefd[1]);
         exit(0);
     }
     else
     {
         // parent process
         close(pipefd[1]); // close write end of the pipe
+        close(result_pipefd[1]); // close write end of the result pipe
         children[child_count].pid = pid;
         children[child_count].pipefd[0] = pipefd[0];
         children[child_count].pipefd[1] = -1; // write end of the pipe is no longer accessible
+        children[child_count].result_pipefd[0] = result_pipefd[0];
+        children[child_count].result_pipefd[1] = -1; // write end of the result pipe is no longer accessible
         children[child_count].terminated = false;
         child_count++;
     }
@@ -228,22 +272,9 @@ int parsing_function(char *command)
     return 0;
 }
 
-void signal_handler(int signal)
-{
-    dup2(input_pipe[0], STDIN_FILENO); // overwrite STDIN
-}
 
 int main()
 {
-
-    // create the pipes
-    if (pipe(input_pipe) == -1 || pipe(pid_pipe) == -1)
-    {
-        perror("pipe");
-        return 1;
-    }
-    int stdin_copy = dup(STDIN_FILENO);
-
     struct sigaction sa;
     sa.sa_handler = &handle_child;
     sigemptyset(&sa.sa_mask);
@@ -254,9 +285,16 @@ int main()
         exit(1);
     }
 
-    usleep(1000);
-
-    signal(SIGUSR1, signal_handler);
+    // set up signal handler for SIGUSR1
+    struct sigaction sa_result;
+    sa_result.sa_handler = &handle_result;
+    sigemptyset(&sa_result.sa_mask);
+    sa_result.sa_flags = SA_RESTART;
+    if (sigaction(SIGUSR1, &sa_result, 0) == -1)
+    {
+        perror(0);
+        exit(1);
+    }
 
     usleep(1000);
 
@@ -264,24 +302,6 @@ int main()
     char command[256];
     while (1)
     {
-        dup2(stdin_copy, STDIN_FILENO); // restore stdin
-
-        // print the command prompt
-        printf("findstuff$ ");
-        fflush(stdout);
-
-        // handle user input
-        fgets(command, sizeof(command), stdin);
-        command[strcspn(command, "\n")] = '\0';
-
-        // write user input to the input pipe
-        write(input_pipe[1], command, strlen(command) + 1);
-
-        if (parsing_function(command) == -1)
-        {
-            break;
-        }
-
         fd_set readfds;
         FD_ZERO(&readfds);
 
@@ -309,18 +329,35 @@ int main()
             break;
         }
 
-        // handle child process message
-        for (int i = 0; i < child_count; i++)
+        if (FD_ISSET(STDIN_FILENO, &readfds))
         {
-            if (children[i].pipefd[0] != -1 && FD_ISSET(children[i].pipefd[0], &readfds))
+            // print the command prompt
+            printf("findstuff$ ");
+            fflush(stdout);
+
+            // handle user input
+            fgets(command, sizeof(command), stdin);
+            command[strcspn(command, "\n")] = '\0';
+            if (parsing_function(command) == -1)
             {
-                // read and print the message
-                char buffer[1024];
-                ssize_t len = read(children[i].pipefd[0], buffer, sizeof(buffer) - 1);
-                if (len > 0)
+                break;
+            }
+        }
+        else
+        {
+            // handle child process message
+            for (int i = 0; i < child_count; i++)
+            {
+                if (children[i].pipefd[0] != -1 && FD_ISSET(children[i].pipefd[0], &readfds))
                 {
-                    buffer[len] = '\0';
-                    printf("%s\n", buffer);
+                    // read and print the message
+                    char buffer[1024];
+                    ssize_t len = read(children[i].pipefd[0], buffer, sizeof(buffer) - 1);
+                    if (len > 0)
+                    {
+                        buffer[len] = '\0';
+                        printf("%s\n", buffer);
+                    }
                 }
             }
         }
@@ -328,6 +365,7 @@ int main()
 
     return 0;
 }
+
 
 /*
 
@@ -341,6 +379,7 @@ How he said to test: test with retrieving a larger/more hidden file and then a m
 right after, while the larger one is being found local one should put the output
 
 Within folder:
+find assignment3.txt
 
 Testing file not found:
 find jar.jpg
