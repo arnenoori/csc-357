@@ -2,8 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/wait.h>
-#include <errno.h>  // Include this header for errno
-#include <string.h> // Include this header for strerror()
+#include <errno.h>
+#include <string.h>
+
 
 int main(int argc, char *argv[])
 {
@@ -32,7 +33,7 @@ int main(int argc, char *argv[])
         }
         else if (pid == 0)
         {
-            // In the child process
+            // child process
             char par_id_str[10];
             char par_count_str[10];
 
@@ -49,16 +50,19 @@ int main(int argc, char *argv[])
             }
         }
     }
-
-    // In the parent process
+    // parent process
     for (int i = 0; i < num_instances; i++)
     {
-        wait(NULL);
+        int status;
+        waitpid(-1, &status, 0);
+        if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+        {
+            fprintf(stderr, "Child process exited with error: %d\n", WEXITSTATUS(status));
+        }
     }
 
     return 0;
 }
-
 
 /*
 Testing:
