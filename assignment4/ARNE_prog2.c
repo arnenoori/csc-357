@@ -5,7 +5,6 @@
 #include <errno.h>
 #include <string.h>
 
-
 int main(int argc, char *argv[])
 {
     if (argc != 3)
@@ -22,6 +21,9 @@ int main(int argc, char *argv[])
     args[0] = program_name;
     args[3] = NULL;
 
+    char par_id_str[10];
+    char par_count_str[10];
+
     for (int i = 0; i < num_instances; i++)
     {
         pid = fork();
@@ -34,8 +36,6 @@ int main(int argc, char *argv[])
         else if (pid == 0)
         {
             // child process
-            char par_id_str[10];
-            char par_count_str[10];
 
             sprintf(par_id_str, "%d", i);
             sprintf(par_count_str, "%d", num_instances);
@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
             }
         }
     }
+
     // parent process
     for (int i = 0; i < num_instances; i++)
     {
@@ -64,6 +65,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+
 /*
 Testing:
     gcc -o p1 ARNE_prog1.c
@@ -71,6 +73,8 @@ Testing:
 
     ./p2 ./p1 4
 
+    Make sure that program works normally
+    ./p1 0 1
 
 
 */

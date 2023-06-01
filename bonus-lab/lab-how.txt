@@ -1,0 +1,29 @@
+Bonus lab
+
+Need to use mutex
+
+
+how to implement//
+main
+{
+
+
+char *text = (chra*)malloc(1000000) // dynamic
+
+fork()
+    // mutex here
+    strcat(txt, "...minimum 50 characters text...") // loop this
+    // mutex here
+    return;
+
+// mutex here
+strcat(xt, "SOc\n"); // loop through this wait
+// mutex here (same as child)
+wait(0);
+print out the whole array
+
+}
+
+// Peterson implemented in 10 minutes
+
+// Submit 2 files each with mutex

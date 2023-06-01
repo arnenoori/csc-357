@@ -113,6 +113,7 @@ else
     }
 if(par_count==1){printf("only one process\n");}
 
+
 pthread_mutex_t *mutex;
 int fd[5];
 if(par_id==0)
@@ -200,8 +201,6 @@ for (int a = par_id; a < MATRIX_DIMENSION_XY; a += par_count) // Changed here
 }
 
 
-
-
 clock_gettime(CLOCK_REALTIME, &end_time_with_sync);
 printf("Time taken for multiplication (with sync): %.6f seconds\n", (end_time_with_sync.tv_sec - start_time_with_sync.tv_sec) + (end_time_with_sync.tv_nsec - start_time_with_sync.tv_nsec) / 1000000000.0);
 
@@ -255,11 +254,45 @@ close(fd[1]);
 close(fd[2]);
 close(fd[3]);
 
-shm_unlink("matrixA");
-shm_unlink("matrixB");
-shm_unlink("matrixC");
-shm_unlink("synchobject");
+if (par_id == 0)
+{
+    // Only the process that created the shared memory objects should unlink them
+    shm_unlink("matrixA");
+    shm_unlink("matrixB");
+    shm_unlink("matrixC");
+    shm_unlink("synchobject");
+}
+
 
 return 0;    
 }
 
+
+/*
+Ideally. I want my code to output:
+par_id: 0, par_count: 4
+correct matrix
+time for that matrix calculation
+"full points!"
+
+par_id: 1, par_count: 4
+correct matrix
+time for that matrix calculation
+"full points!"
+
+par_id: 2, par_count: 4
+correct matrix
+time for that matrix calculation
+"full points!"
+
+par_id: 3, par_count: 4
+correct matrix
+time for that matrix calculation
+"full points!"
+
+gcc -o p1 ARNE_prog1.c -lpthread
+gcc -o p2 ARNE_prog2.c -lpthread
+./p2 ./p1 4
+
+
+*/

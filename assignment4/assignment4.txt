@@ -1,0 +1,192 @@
+10x10 named shared memory
+
+A,B,c
+C=A*B
+also should work for A=C*B
+
+nameshot memory = 0 or 1
+
+
+main()
+{
+    if id == 0 {
+        O_CREATE
+        A, B, C
+    }
+} else 
+{
+    link A, B, C
+    gather()
+}
+gather()
+print C; 
+
+// another solution, every gather function gets its own number gather(1), gather(2), gather(3)
+
+C = A * B;
+
+gather() // has to start in 0, has to be done before other processes go further
+{
+    s[par_id]++
+    while all s[i] < g
+    {
+        if(s==par_count)
+        {
+            break;
+        }
+    }
+}
+
+
+how to get time bonus:
+
+gather()
+take time
+gather()
+criticalsectiongather
+take time
+
+-----
+
+mutex - mutual exclusion
+criticalsection
+raceconditions
+
+mutex is a mechanic to make sure 1 process is being accessed at a time and the others are waiting
+
+// Example code:
+
+int main()
+{
+    int parent_pid = getpid();
+    char *text = (char*)mmap(NULL, 1000, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1. 0);
+    char t1[] = "The wiser gives in! A sad truth, it established the world domination of stupidity.\n";
+    char t2[] = "We look for the truth, but we only want to find it where we like it.\n";
+    char outtext[1000];
+    int i=0;
+    // int flag = 1;
+    // int c1=0, c2=0;
+
+    if(fork() == 0)
+    {
+        for(int i=0;; i=!i)
+        {
+        mutex::lock(); // pseudocode, the idea is you wrap it around the critical section
+        if(i%2 == 0)
+            strcpy(text, t1);
+        else
+            strcpy(text, t2);
+        mutex::unlock();
+        }
+    }
+    else 
+    {
+        while(1)
+        {
+        mutex::lock();
+        strcpy(outtext, text)
+        print("%s\n" outtext)
+        cout << outtext << endl;
+        mutex::unlock();
+        }
+    }
+}
+
+// state you are about to enter the critical section
+// Make use of peters algorithm
+
+c1=1;
+flag = 1;
+while(flag==1);
+
+
+c2=1;
+flag =0;
+while(flag==0);
+
+Message Passing Interface
+
+---
+Original Lab 5:
+
+Program 1:
+
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+int main() {
+    const char *shared_memory_name = "ARNE_SharedMemory";
+    const int shared_memory_size = 1024;
+
+    int shm_fd = shm_open(shared_memory_name, O_CREAT | O_RDWR, 0666); //0666 permission code for read and write
+    ftruncate(shm_fd, shared_memory_size); // size of shared memory
+
+    char *shm_ptr = mmap(0, shared_memory_size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    memset(shm_ptr, 0, shared_memory_size); // intiialize shared memory with 0
+
+    while (1) { // checks if theres user input 
+        printf("Enter a message (type 'quit' to exit): ");
+        char message[shared_memory_size];
+        fgets(message, shared_memory_size, stdin);
+        message[strcspn(message, "\n")] = 0;
+
+        if (strcmp(message, "quit") == 0) break;
+// if user calls for break
+        strncpy(shm_ptr, message, shared_memory_size - 1);
+    }
+
+    shm_unlink(shared_memory_name); // closes the shared memory
+    munmap(shm_ptr, shared_memory_size);
+    close(shm_fd);
+
+    return 0;
+}
+
+
+Program 2:
+
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+int main() {
+    const char *shared_memory_name = "ARNE_SharedMemory";
+    const int shared_memory_size = 1024;
+
+    int shm_fd = shm_open(shared_memory_name, O_RDWR, 0666); // opens the shared memory
+
+    if (shm_fd == -1) {
+        perror("Failed to open shared memory");
+        exit(1);
+    }
+
+    char *shm_ptr = mmap(0, shared_memory_size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+
+    while (1) {
+        if (strlen(shm_ptr) > 0) { // check if shared memory contains
+            printf("Received message: %s\n", shm_ptr);
+            break;
+        }
+        sleep(1);
+    }
+
+    munmap(shm_ptr, shared_memory_size);
+    close(shm_fd);
+
+    return 0;
+}
+
+---
+How to generate random numbers:
+
+srand(time(0))
+inti = rand
