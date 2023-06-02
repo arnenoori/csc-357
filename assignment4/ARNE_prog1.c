@@ -11,68 +11,67 @@
 #include <time.h>
 #include <pthread.h>
 #include <sys/shm.h>
+#include <stdatomic.h>
+#include <errno.h>
 
 const int MATRIX_DIMENSION_XY = 10;
-const size_t SHM_SIZE = 1024;
 
 //SEARCH FOR TODO
 
 //************************************************************************************************************************
 // sets one element of the matrix
-void set_matrix_elem(float *M,int x,int y,float f)
+void set_matrix_elem(float *M, int x, int y, float f)
 {
-M[x + y*MATRIX_DIMENSION_XY] = f;
+    M[x + y * MATRIX_DIMENSION_XY] = f;
 }
 
 //************************************************************************************************************************
 
-// lets see it both are the same
-int quadratic_matrix_compare(float *A,float *B)
+// lets see if both matrices are the same
+int quadratic_matrix_compare(float *A, float *B)
 {
-for(int a = 0;a<MATRIX_DIMENSION_XY;a++)
-    for(int b = 0;b<MATRIX_DIMENSION_XY;b++)
-       if(A[a +b * MATRIX_DIMENSION_XY]!=B[a +b * MATRIX_DIMENSION_XY]) 
-        return 0;
-   
-return 1;
+    for (int a = 0; a < MATRIX_DIMENSION_XY; a++) {
+        for (int b = 0; b < MATRIX_DIMENSION_XY; b++) {
+            if (A[a + b * MATRIX_DIMENSION_XY] != B[a + b * MATRIX_DIMENSION_XY])
+                return 0;
+        }
+    }
+    return 1;
 }
 
 //************************************************************************************************************************
 
-//print a matrix
+// print a matrix
 void quadratic_matrix_print(float *C)
 {
     printf("\n");
-for(int a = 0;a<MATRIX_DIMENSION_XY;a++)
-    {
-    printf("\n");
-    for(int b = 0;b<MATRIX_DIMENSION_XY;b++)
-        printf("%.2f,",C[a + b* MATRIX_DIMENSION_XY]);
+    for (int a = 0; a < MATRIX_DIMENSION_XY; a++) {
+        printf("\n");
+        for (int b = 0; b < MATRIX_DIMENSION_XY; b++)
+            printf("%.2f,", C[a + b * MATRIX_DIMENSION_XY]);
     }
-printf("\n");
+    printf("\n");
 }
 
 //************************************************************************************************************************
 
 // multiply two matrices
-void quadratic_matrix_multiplication(float *A,float *B,float *C)
+void quadratic_matrix_multiplication(float *A, float *B, float *C)
 {
-//nullify the result matrix first
-for(int a = 0;a<MATRIX_DIMENSION_XY;a++)
-    for(int b = 0;b<MATRIX_DIMENSION_XY;b++)
-        C[a + b*MATRIX_DIMENSION_XY] = 0.0;
-//multiply
-for(int a = 0;a<MATRIX_DIMENSION_XY;a++) // over all cols a
-    for(int b = 0;b<MATRIX_DIMENSION_XY;b++) // over all rows b
-        for(int c = 0;c<MATRIX_DIMENSION_XY;c++) // over all rows/cols left
-            {
-                C[a + b*MATRIX_DIMENSION_XY] += A[c + b*MATRIX_DIMENSION_XY] * B[a + c*MATRIX_DIMENSION_XY]; 
+    for (int a = 0; a < MATRIX_DIMENSION_XY; a++) {
+        for (int b = 0; b < MATRIX_DIMENSION_XY; b++) {
+            C[a + b * MATRIX_DIMENSION_XY] = 0.0;
+            for (int c = 0; c < MATRIX_DIMENSION_XY; c++) {
+                C[a + b * MATRIX_DIMENSION_XY] += A[c + b * MATRIX_DIMENSION_XY] * B[a + c * MATRIX_DIMENSION_XY];
             }
+        }
+    }
 }
 
 //************************************************************************************************************************
 
-void quadratic_matrix_multiplication_parallel(int par_id, int par_count, float *A, float *B, float *C) {
+void quadratic_matrix_multiplication_parallel(int par_id, int par_count, float *A, float *B, float *C)
+{
     for (int i = par_id; i < MATRIX_DIMENSION_XY; i += par_count) {
         for (int j = 0; j < MATRIX_DIMENSION_XY; j++) {
             C[i * MATRIX_DIMENSION_XY + j] = 0;
@@ -83,174 +82,170 @@ void quadratic_matrix_multiplication_parallel(int par_id, int par_count, float *
     }
 }
 
-void synch(int par_id, int par_count, int *ready, pthread_mutex_t *mutex) {
-    pthread_mutex_lock(mutex);
-    ready[par_id] = 1;
-    pthread_mutex_unlock(mutex);
+// Function to synchronize the processes
+void synch(int par_id, int par_count)
+{
+    char filename[] = "synchobject";
+    int fd = open(filename, O_RDWR);
+    if (fd < 0) {
+        perror("open");
+        exit(1);
+    }
 
-    for (int i = 0; i < par_count; i++) {
-        while (!ready[i]) {
-            // Not all processes are ready, so wait a bit before checking again
-            usleep(100);
+    // Seek to the position based on par_id
+    off_t offset = par_id * sizeof(int);
+    if (lseek(fd, offset, SEEK_SET) < 0) {
+        perror("lseek");
+        close(fd);
+        exit(1);
+    }
+
+    // Read the current value
+    int value;
+    if (read(fd, &value, sizeof(int)) < 0) {
+        perror("read");
+        close(fd);
+        exit(1);
+    }
+
+    // Increment the value and write it back
+    value++;
+    if (lseek(fd, offset, SEEK_SET) < 0) {
+        perror("lseek");
+        close(fd);
+        exit(1);
+    }
+    if (write(fd, &value, sizeof(int)) < 0) {
+        perror("write");
+        close(fd);
+        exit(1);
+    }
+
+    close(fd);
+
+    // Synchronization point: Wait until all processes have reached this point
+    while (1) {
+        fd = open(filename, O_RDONLY);
+        if (fd < 0) {
+            perror("open");
+            exit(1);
         }
+
+        // Check if all values are equal to par_count
+        int count = 0;
+        for (int i = 0; i < par_count; i++) {
+            if (read(fd, &value, sizeof(int)) < 0) {
+                perror("read");
+                close(fd);
+                exit(1);
+            }
+            if (value == par_count) {
+                count++;
+            }
+        }
+        close(fd);
+
+        // If all values are equal to par_count, break the loop
+        if (count == par_count) {
+            break;
+        }
+
+        // Sleep for a short duration before checking again
+        usleep(100);
     }
 }
 
-
 //************************************************************************************************************************
+
+
+int create_shared_memory(const char *name, size_t size) {
+    int fd = shm_open(name, O_RDWR | O_CREAT, 0666);
+    if (fd < 0) {
+        perror("shm_open");
+        exit(1);
+    }
+    
+    if (ftruncate(fd, size) < 0) {
+        perror("ftruncate");
+        exit(1);
+    }
+    
+    return fd;
+}
 
 int main(int argc, char *argv[]) {
     int par_id = 0;
     int par_count = 1;
     float *A, *B, *C;
-    int *ready;
-    int *shared_counter;
-    
+    float M[MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY];
 
-if(argc!=3) { 
-    printf("Usage: %s <parent id> <parent count>\n", argv[0]); 
-    return -1;
-} else {
-    par_id = atoi(argv[1]);
-    par_count = atoi(argv[2]);
-    
-    // Prepare shared memory segment name
-    char shm_name[64];
-    sprintf(shm_name, "ARNE_SharedMemory%d", par_id);
-
-    // Create the shared memory segment
-    int shm_fd = shm_open(shm_name, O_CREAT | O_RDWR, 0600);
-    if (shm_fd < 0) {
-        perror("shm_open");
+    if (argc != 3) {
+        printf("Usage: %s <parent id> <parent count>\n", argv[0]);
         return -1;
-    }
-    ftruncate(shm_fd, sizeof(int));
-
-    // Map the shared memory segment in the address space of the process
-    shared_counter = mmap(0, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
-    if (shared_counter == MAP_FAILED) {
-        perror("mmap");
-        return -1;
-    }
-}
-
-pthread_mutex_t *mutex;
-int fd[5];
-
-if(par_id==0) {
-    // Create shared memory segments in process with id 0
-    fd[0] = shm_open("matrixA", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-    fd[1] = shm_open("matrixB", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-    fd[2] = shm_open("matrixC", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-    fd[3] = shm_open("synchobject", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-    fd[4] = shm_open("mutex", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-
-    // Resize shared memory segments
-    ftruncate(fd[0], MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
-    ftruncate(fd[1], MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
-    ftruncate(fd[2], MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
-    ftruncate(fd[3], par_count * sizeof(int));
-    ftruncate(fd[4], sizeof(pthread_mutex_t));
-
-    // Map shared memory segments into address space
-    A = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[0], 0);
-    B = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[1], 0);
-    C = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[2], 0);
-    ready = mmap(NULL, par_count * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED, fd[3], 0);
-    mutex = mmap(NULL, sizeof(pthread_mutex_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd[4], 0);
-
-    // Initialize mutex for process-shared synchronization
-    pthread_mutexattr_t attr;
-    pthread_mutexattr_init(&attr);
-    pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
-    pthread_mutex_init(mutex, &attr);
-
-    // Initialize ready array
-    for (int i = 0; i < par_count; i++) {
-        ready[i] = 0;
-    }
-} else {
-    // All other processes only open already created shared memory segments
-    fd[0] = shm_open("matrixA", O_RDWR, S_IRUSR | S_IWUSR);
-    fd[1] = shm_open("matrixB", O_RDWR, S_IRUSR | S_IWUSR);
-    fd[2] = shm_open("matrixC", O_RDWR, S_IRUSR | S_IWUSR);
-    fd[3] = shm_open("synchobject", O_RDWR, S_IRUSR | S_IWUSR);
-    fd[4] = shm_open("mutex", O_RDWR, S_IRUSR | S_IWUSR);
-
-    // Map shared memory segments into address space
-    A = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[0], 0);
-    B = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[1], 0);
-    C = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[2], 0);
-    ready = mmap(NULL, par_count * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED, fd[3], 0);
-    mutex = mmap(NULL, sizeof(pthread_mutex_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd[4], 0);
-
-    // Sleep to ensure the shared memory is initialized
-    sleep(2);
-}
-
-    for (int i = 0; i < par_count; i++) {
-        ready[i] = 0;
+    } else {
+        par_id = atoi(argv[1]);
+        par_count = atoi(argv[2]);
     }
 
-    synch(par_id, par_count, ready, mutex);
+    // Open or create shared memory objects
+    int fdA = create_shared_memory("matrixA", MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
+    int fdB = create_shared_memory("matrixB", MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
+    int fdC = create_shared_memory("matrixC", MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
 
+    // Map the shared memory objects into the process's address space
+    A = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fdA, 0);
+    B = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fdB, 0);
+    C = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fdC, 0);
+
+    // Initialize the matrices if par_id is 0
     if (par_id == 0) {
-        for (int i = 0; i < MATRIX_DIMENSION_XY; i++) {
-            for (int j = 0; j < MATRIX_DIMENSION_XY; j++) {
-                A[i * MATRIX_DIMENSION_XY + j] = (i + 1) * (j + 1);
-                B[i * MATRIX_DIMENSION_XY + j] = (i + 1) + (j + 1);
+        for (int a = 0; a < MATRIX_DIMENSION_XY; a++) {
+            for (int b = 0; b < MATRIX_DIMENSION_XY; b++) {
+                set_matrix_elem(A, a, b, a * b * 0.1 + 0.1);
+                set_matrix_elem(B, a, b, a * b * 0.1 + 0.2);
             }
         }
     }
 
-    synch(par_id, par_count, ready, mutex);
+    // Synchronization point: wait until all processes have initialized their matrices
+    synch(par_id, par_count);
 
+    // Perform matrix multiplication in parallel
     quadratic_matrix_multiplication_parallel(par_id, par_count, A, B, C);
 
-    synch(par_id, par_count, ready, mutex);
+    // Synchronization point: wait until all processes have completed their calculations
+    synch(par_id, par_count);
 
+    // Only the process with par_id == 0 should print the matrix and verify the result
     if (par_id == 0) {
         quadratic_matrix_print(C);
-        pthread_mutex_destroy(mutex);
-        shm_unlink("mutex");
-    }
-    
-    synch(par_id, par_count, ready, mutex);
-    
-        pthread_mutex_lock(mutex);
-    ++(*shared_counter);
-    pthread_mutex_unlock(mutex);
 
-    printf("Counter value: %d\n", *shared_counter);
-    // Test the result
-    float M[MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY];
-    quadratic_matrix_multiplication(A, B, M);
-
-    if (quadratic_matrix_compare(C, M)) {
-        printf("full points!\n");
-    } else {
-        printf("buuug!\n");
+        quadratic_matrix_multiplication(A, B, M);
+        if (quadratic_matrix_compare(C, M)) {
+            printf("full points!\n");
+        } else {
+            printf("bug!\n");
+        }
     }
 
-    printf("par_id: %d, par_count: %d\n", par_id, par_count);
+    // Clean up
+    munmap(A, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
+    munmap(B, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
+    munmap(C, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
+    close(fdA);
+    close(fdB);
+    close(fdC);
 
-    close(fd[0]);
-    close(fd[1]);
-    close(fd[2]);
-    close(fd[3]);
-    close(fd[4]);
-
+    // Unlink shared memory objects if par_id is 0
     if (par_id == 0) {
         shm_unlink("matrixA");
         shm_unlink("matrixB");
         shm_unlink("matrixC");
-        shm_unlink("synchobject");
     }
-
-
 
     return 0;
 }
+
 
 
 /*

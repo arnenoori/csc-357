@@ -48,65 +48,84 @@ take time
 
 -----
 
-mutex - mutual exclusion
-criticalsection
-raceconditions
+Thursday class:
 
-mutex is a mechanic to make sure 1 process is being accessed at a time and the others are waiting
+debug using print statements
 
-// Example code:
+most of the time you need to test the synch function
 
-int main()
+coutcc"before sync 1:""cc id c = enoec" // idk if enoec is correct i couldnt read the handwriting
+synch()
+coutcc"before sync 1:""cc id c = enoec"
+sleep(5);
+work();
+synch();
+work();
+coutcc"before sync 1:""cc id c = enoec"
+
+how to check, terminal output should look something like this:
+bs1: 3
+bs1: 0
+bs1: 2
+bs1: 1
+--
+bs2: 0
+bs2: 1
+bs2: 3
+bs2: 2
+
+
+BYTE
+float *A;
+
+if(id == 0)
 {
-    int parent_pid = getpid();
-    char *text = (char*)mmap(NULL, 1000, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1. 0);
-    char t1[] = "The wiser gives in! A sad truth, it established the world domination of stupidity.\n";
-    char t2[] = "We look for the truth, but we only want to find it where we like it.\n";
-    char outtext[1000];
-    int i=0;
-    // int flag = 1;
-    // int c1=0, c2=0;
+    float *A = mmap(...) // DON'T DECLARE IN THIS PROGRAM BLOCK, it will die outside of the program BLOCK
+} // dead after this }
+else
+{
+    sleep(1);
+} link
 
-    if(fork() == 0)
+MPI function:
+should be able to handle up to 5 processes:
+
+typedef char* pc; // character is a point of characters
+pc myorgs[4]'
+myorgs[0] = malloc(100);
+myorgs[1] = malloc(100);
+myorgs[2] = malloc(100);
+myorgs[3] = NULL;
+
+for(n)
+{
+    if(for() == 0)
     {
-        for(int i=0;; i=!i)
-        {
-        mutex::lock(); // pseudocode, the idea is you wrap it around the critical section
-        if(i%2 == 0)
-            strcpy(text, t1);
-        else
-            strcpy(text, t2);
-        mutex::unlock();
-        }
-    }
-    else 
-    {
-        while(1)
-        {
-        mutex::lock();
-        strcpy(outtext, text)
-        print("%s\n" outtext)
-        cout << outtext << endl;
-        mutex::unlock();
-        }
+    execv("./calc"," // arguments: calc /* argv[1] */ 4 /* argv[2] */ 0-3, NULL)
+    // if its not successful then return
     }
 }
 
-// state you are about to enter the critical section
-// Make use of peters algorithm
+// same as you did in the Lab
+// parrallel MPI video on canvas during week 5
 
-c1=1;
-flag = 1;
-while(flag==1);
+C = A*B;
+synch()
+if(id==0)
+{
+    print C
+}
+A = C*B;
+
+*use gather function
+for timing print only 1 function
 
 
-c2=1;
-flag =0;
-while(flag==0);
+
+-----
 
 Message Passing Interface
 
----
 Original Lab 5:
 
 Program 1:
@@ -186,7 +205,7 @@ int main() {
 }
 
 ---
-How to generate random numbers:
+How to generate random numbers to test the code:
 
 srand(time(0))
 inti = rand

@@ -27,3 +27,61 @@ print out the whole array
 // Peterson implemented in 10 minutes
 
 // Submit 2 files each with mutex
+
+
+
+mutex - mutual exclusion
+criticalsection
+raceconditions
+
+mutex is a mechanic to make sure 1 process is being accessed at a time and the others are waiting
+
+// Example code:
+
+int main()
+{
+    int parent_pid = getpid();
+    char *text = (char*)mmap(NULL, 1000, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1. 0);
+    char t1[] = "The wiser gives in! A sad truth, it established the world domination of stupidity.\n";
+    char t2[] = "We look for the truth, but we only want to find it where we like it.\n";
+    char outtext[1000];
+    int i=0;
+    // int flag = 1;
+    // int c1=0, c2=0;
+
+    if(fork() == 0)
+    {
+        for(int i=0;; i=!i)
+        {
+        mutex::lock(); // pseudocode, the idea is you wrap it around the critical section
+        if(i%2 == 0)
+            strcpy(text, t1);
+        else
+            strcpy(text, t2);
+        mutex::unlock();
+        }
+    }
+    else 
+    {
+        while(1)
+        {
+        mutex::lock();
+        strcpy(outtext, text)
+        print("%s\n" outtext)
+        cout << outtext << endl;
+        mutex::unlock();
+        }
+    }
+}
+
+// state you are about to enter the critical section
+// Make use of peters algorithm
+
+c1=1;
+flag = 1;
+while(flag==1);
+
+
+c2=1;
+flag =0;
+while(flag==0);
