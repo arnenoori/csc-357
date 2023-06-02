@@ -27,14 +27,22 @@ int main(int argc, char *argv[])
             printf("Child: This is process with ID %d\n", i);
             char par_id_str[10];
             char par_count_str[10];
-            sprintf(par_id_str, "%d", i);
-            sprintf(par_count_str, "%d", instance_count);
+            
+            if (sprintf(par_id_str, "%d", i) < 0) {
+                perror("Failed to sprintf par_id_str");
+                exit(1);
+            }
+            
+            if (sprintf(par_count_str, "%d", instance_count) < 0) {
+                perror("Failed to sprintf par_count_str");
+                exit(1);
+            }
 
             char *args[] = {program_path, par_id_str, par_count_str, NULL};
 
             if (execv(program_path, args) == -1) {
                 perror("Failed to execv");
-                return 1;
+                exit(1);
             }
         }
     }

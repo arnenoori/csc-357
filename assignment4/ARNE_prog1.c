@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#define MATRIX_DIMENSION_XY 3
+#define MATRIX_DIMENSION_XY 10
 
 void set_matrix_elem(float *matrix, int row, int col, float value) {
     matrix[row * MATRIX_DIMENSION_XY + col] = value;
@@ -73,23 +73,16 @@ void synch(int par_id, int par_count, int *ready, int sync)
 
 void quadratic_matrix_multiplication_parallel(int par_id, int par_count, float* A, float* B, float* C, int* ready)
 {
-    int splitWork = MATRIX_DIMENSION_XY / par_count;
-    int startCol = par_id * splitWork;
-    int endCol;
-    if (par_id == par_count - 1)
-    {
-        endCol = MATRIX_DIMENSION_XY;
-    }
-    else
-    {
-        endCol = startCol + splitWork ;
-    }
+    int baseWork = MATRIX_DIMENSION_XY / par_count; // Minimum number of columns each process should work on
+    int remainingWork = MATRIX_DIMENSION_XY % par_count; // Remaining columns after each process is assigned a minimum number
+    int startColumn = par_id * baseWork + (par_id < remainingWork ? par_id : remainingWork); // Start column for this process
+    int endColumn = startColumn + baseWork + (par_id < remainingWork ? 1 : 0); // End column for this process
 
     // Wait for all processes to complete the initialization of matrix C
     synch(par_id, par_count, ready, 2);
 
     // Multiply matrices
-    for (int a = startCol; a < endCol; a++) // over all cols a
+    for (int a = startColumn; a < endColumn; a++) // over all cols a
     {
         for (int b = 0; b < MATRIX_DIMENSION_XY; b++) // over all rows b
         {
@@ -117,7 +110,32 @@ int main(int argc, char *argv[]) {
     par_count = atoi(argv[2]);
 
     if (par_count == 1) {
-        printf("Only one process\n");
+        // Initialize matrices A and B.
+        A = malloc(MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
+        B = malloc(MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
+        C = malloc(MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
+        for (int i = 0; i < MATRIX_DIMENSION_XY; i++) {
+            for (int j = 0; j < MATRIX_DIMENSION_XY; j++) {
+                set_matrix_elem(A, i, j, (float)rand() / RAND_MAX * 10.0);
+                set_matrix_elem(B, i, j, (float)rand() / RAND_MAX * 10.0);
+            }
+        }
+        // Perform the matrix multiplication.
+        quadratic_matrix_multiplication(A, B, C);
+        // Print the result.
+        quadratic_matrix_print(C);
+        // Test the result.
+        float M[MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY];
+        quadratic_matrix_multiplication(A, B, M);
+        if (quadratic_matrix_compare(C, M)) {
+            printf("Full points!\n");
+        } else {
+            printf("Bug!\n");
+        }
+        // Free the matrices.
+        free(A);
+        free(B);
+        free(C);
         return 0;
     }
 
@@ -186,7 +204,9 @@ int main(int argc, char *argv[]) {
     float M[MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY];
     quadratic_matrix_multiplication(A, B, M);
     if (quadratic_matrix_compare(C, M)) {
-        printf("Full points!\n");
+        if (par_id == 0) {
+            printf("Full points!\n");
+        }
     } else {
         printf("Bug!\n");
     }
