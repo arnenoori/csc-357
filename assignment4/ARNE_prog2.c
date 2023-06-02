@@ -1,65 +1,48 @@
-#include <sys/types.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <sys/wait.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     if (argc != 3) {
-        printf("Usage: %s <program> <count>\n", argv[0]);
-        return -1;
+        printf("Usage: %s program_path instance_count\n", argv[0]);
+        return 1;
     }
 
-    char *program = argv[1];
-    int count = atoi(argv[2]);
+    char *program_path = argv[1];
+    int instance_count = atoi(argv[2]);
 
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < instance_count; i++) {
         pid_t pid = fork();
+        printf("Parent: Forked process with ID %d\n", pid);
+        
+        if (pid < 0) {
+            perror("Failed to fork");
+            return 1;
+        }
+
         if (pid == 0) {
-            // Child process
+            // This is the child process.
+            printf("Child: This is process with ID %d\n", i);
             char par_id_str[10];
             char par_count_str[10];
-
             sprintf(par_id_str, "%d", i);
-            sprintf(par_count_str, "%d", count);
+            sprintf(par_count_str, "%d", instance_count);
 
-            char *args[4];
-            args[0] = program;
-            args[1] = par_id_str;
-            args[2] = par_count_str;
-            args[3] = NULL;
+            char *args[] = {program_path, par_id_str, par_count_str, NULL};
 
-            setbuf(stdout, NULL);  // Disable stdout buffering
-
-            execv(program, args);
-
-            // If execv returns, there was an error
-            perror("execv");
-            return -1;
-        } else if (pid < 0) {
-            // Error forking
-            perror("fork");
-            return -1;
+            if (execv(program_path, args) == -1) {
+                perror("Failed to execv");
+                return 1;
+            }
         }
     }
 
-    // Parent process waits for all child processes to finish
-    while (wait(NULL) > 0);
+    // Wait for all child processes to complete.
+    for (int i = 0; i < instance_count; i++) {
+        wait(NULL);
+    }
 
     return 0;
 }
-
-
-
-/*
-Testing:
-    gcc -o p1 ARNE_prog1.c
-    gcc -o p2 ARNE_prog2.c
-
-    ./p2 ./p1 4
-
-    Make sure that program works normally
-    ./p1 0 1
-
-
-*/
