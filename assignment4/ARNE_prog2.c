@@ -11,7 +11,8 @@
 
 int main(int argc, char *argv[])
 {
-    if (argc != 3) {
+    if (argc != 3)
+    {
         printf("Usage: %s program_path instance_count\n", argv[0]);
         return 1;
     }
@@ -20,17 +21,21 @@ int main(int argc, char *argv[])
     int instance_count = atoi(argv[2]);
     pid_t *pids = malloc(instance_count * sizeof(pid_t));
 
-    for (int i = 0; i < instance_count; i++) {
+    for (int i = 0; i < instance_count; i++)
+    {
         pids[i] = fork();
         
-        if (pids[i] < 0) {
+        if (pids[i] < 0)
+        {
             perror("Failed to fork");
             return 1;
         }
 
-        if (pids[i] == 0) {
-            // This is the child process.
-            printf("Child: This is process with ID %d\n", i);
+        if (pids[i] == 0)
+        {
+            // child process
+
+            // printf("Child: This is process with ID %d\n", i);
             char par_id_str[10];
             char par_count_str[10];
             
@@ -44,8 +49,9 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Wait for all child processes to complete.
-    for (int i = 0; i < instance_count; i++) {
+    // wait for all children to complete
+    for (int i = 0; i < instance_count; i++)
+    {
         waitpid(pids[i], NULL, 0);
     }
 
