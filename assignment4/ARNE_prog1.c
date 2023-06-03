@@ -51,48 +51,49 @@ int quadratic_matrix_compare(float *matrix1, float *matrix2) {
 }
 
 
-void synch(int par_id, int par_count, int *ready, int sync)
-{
-    ready[par_id] = sync;
-
-    if (par_id != 0) {
-        // Wait until the previous process has reached the synchronization point
-        while (ready[par_id - 1] < sync) {
-            usleep(1000);
+void synch(int par_id, int par_count, int *ready, int sync) {
+    printf("Process %d: Entering synch function, sync = %d\n", par_id, sync);
+    ready[par_id] = sync + 1;
+    printf("Process %d: ready array after update:\n", par_id);
+    for (int i = 0; i < par_count; i++) {
+        printf("%d ", ready[i]);
+    }
+    printf("\n");
+    for (int i = 0; i < par_count; i++) {
+        while (ready[i] < sync + 1) {
+            printf("Process %d: waiting for process %d, ready[%d] = %d, sync = %d\n", par_id, i, i, ready[i], sync);
         }
     }
-
-    if (par_id != par_count - 1) {
-        // Wait until the next process has reached the synchronization point
-        while (ready[par_id + 1] < sync) {
-            usleep(1000);
-        }
-    }
+    printf("Process %d: Leaving synch function, sync = %d\n", par_id, sync);
 }
+
+
+
+
 
 
 void quadratic_matrix_multiplication_parallel(int par_id, int par_count, float* A, float* B, float* C, int* ready)
 {
-    int baseWork = MATRIX_DIMENSION_XY / par_count; // Minimum number of columns each process should work on
-    int remainingWork = MATRIX_DIMENSION_XY % par_count; // Remaining columns after each process is assigned a minimum number
-    int startColumn = par_id * baseWork + (par_id < remainingWork ? par_id : remainingWork); // Start column for this process
-    int endColumn = startColumn + baseWork + (par_id < remainingWork ? 1 : 0); // End column for this process
+    printf("Process %d: Entering quadratic_matrix_multiplication_parallel function\n", par_id);
 
-    // Wait for all processes to complete the initialization of matrix C
+    int baseWork = MATRIX_DIMENSION_XY / par_count;
+    int remainingWork = MATRIX_DIMENSION_XY % par_count;
+    int startColumn = par_id * baseWork + (par_id < remainingWork ? par_id : remainingWork);
+    int endColumn = startColumn + baseWork + (par_id < remainingWork ? 1 : 0);
+
     synch(par_id, par_count, ready, 2);
 
-    // Multiply matrices
-    for (int a = startColumn; a < endColumn; a++) // over all cols a
-    {
-        for (int b = 0; b < MATRIX_DIMENSION_XY; b++) // over all rows b
-        {
-            for (int c = 0; c < MATRIX_DIMENSION_XY; c++) // over all rows/cols left
-            {
+    for (int a = startColumn; a < endColumn; a++) {
+        for (int b = 0; b < MATRIX_DIMENSION_XY; b++) {
+            for (int c = 0; c < MATRIX_DIMENSION_XY; c++) {
                 C[a + b * MATRIX_DIMENSION_XY] += A[c + b * MATRIX_DIMENSION_XY] * B[a + c * MATRIX_DIMENSION_XY];
             }
         }
     }
+
+    printf("Process %d: Leaving quadratic_matrix_multiplication_parallel function\n", par_id);
 }
+
 
 
 int main(int argc, char *argv[]) {
@@ -141,26 +142,57 @@ int main(int argc, char *argv[]) {
 
     int fd[4];
 
-    synch(par_id, par_count, ready, 0);
 
-    if (par_id == 0) {
-        // Create the shared memory for A, B, C, ready.
+
+
+if (par_id == 0) {
+        // Create the shared memory for A, B, C.
         fd[0] = shm_open("matrixA", O_CREAT | O_RDWR, 0666);
         fd[1] = shm_open("matrixB", O_CREAT | O_RDWR, 0666);
         fd[2] = shm_open("matrixC", O_CREAT | O_RDWR, 0666);
+        // Create the shared memory for ready.
         fd[3] = shm_open("synchobject", O_CREAT | O_RDWR, 0666);
+        if (fd[3] == -1) {
+            perror("shm_open failed for ready");
+            return 1;
+        }
+
 
         // Set the size of the shared memory.
         ftruncate(fd[0], MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
         ftruncate(fd[1], MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
         ftruncate(fd[2], MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
-        ftruncate(fd[3], par_count * sizeof(int));
+            // Set the size of the shared memory for ready.
+        if (ftruncate(fd[3], par_count * sizeof(int)) == -1) {
+            perror("ftruncate failed for ready");
+            close(fd[3]);
+            return 1;
+        }
 
         // Map the shared memory into this process's address space.
         A = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[0], 0);
+        if (A == MAP_FAILED) {
+            perror("mmap failed for A");
+            return 1;
+        }
+
         B = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[1], 0);
+        if (B == MAP_FAILED) {
+            perror("mmap failed for B");
+            return 1;
+        }
+
         C = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[2], 0);
+        if (C == MAP_FAILED) {
+            perror("mmap failed for C");
+            return 1;
+        }
+
         ready = mmap(NULL, par_count * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED, fd[3], 0);
+        if (ready == MAP_FAILED) {
+            perror("mmap failed for ready");
+            return 1;
+        }
 
         // Initialize the synchronization array.
         for (int i = 0; i < par_count; i++) {
@@ -175,30 +207,57 @@ int main(int argc, char *argv[]) {
             }
         }
     } else {
-        // Open the shared memory for A, B, C, ready.
+        // Open the shared memory for A, B, C.
         fd[0] = shm_open("matrixA", O_RDWR, 0666);
         fd[1] = shm_open("matrixB", O_RDWR, 0666);
         fd[2] = shm_open("matrixC", O_RDWR, 0666);
-        fd[3] = shm_open("synchobject", O_RDWR, 0666);
-
-        // Map the shared memory into this process's address space.
-        A = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[0], 0);
-        B = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[1], 0);
-        C = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[2], 0);
-        ready = mmap(NULL, par_count * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED, fd[3], 0);
+    A = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[0], 0);
+    if (A == MAP_FAILED) {
+        perror("mmap failed for A");
+        return 1;
     }
 
+    B = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[1], 0);
+    if (B == MAP_FAILED) {
+        perror("mmap failed for B");
+        return 1;
+    }
+
+    C = mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[2], 0);
+    if (C == MAP_FAILED) {
+        perror("mmap failed for C");
+        return 1;
+    }
+
+    ready = mmap(NULL, par_count * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED, fd[3], 0);
+    if (ready == MAP_FAILED) {
+        perror("mmap failed for ready");
+        return 1;
+    }
+}
+
+    // Initialize ready array in process with par_id 0
+
+    printf("Process %d: Before synch 1\n", par_id);
     synch(par_id, par_count, ready, 1);
+    printf("Process %d: After synch 1\n", par_id);
 
+    printf("Process %d: Before multiplication\n", par_id);
     quadratic_matrix_multiplication_parallel(par_id, par_count, A, B, C, ready);
+    printf("Process %d: After multiplication\n", par_id);
 
+
+    printf("Process %d: Before synch 2\n", par_id);
     synch(par_id, par_count, ready, 2);
+    printf("Process %d: After synch 2\n", par_id);
 
     if (par_id == 0) {
         quadratic_matrix_print(C);
     }
 
+    printf("Process %d: Before synch 3\n", par_id);
     synch(par_id, par_count, ready, 3);
+    printf("Process %d: After synch 3\n", par_id);
 
     // Test the result
     float M[MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY];
@@ -211,7 +270,10 @@ int main(int argc, char *argv[]) {
         printf("Bug!\n");
     }
 
+
+    printf("Process %d: Before synch 4\n", par_id);
     synch(par_id, par_count, ready, 4);
+    printf("Process %d: After synch 4\n", par_id);
 
     close(fd[0]);
     close(fd[1]);
