@@ -1,19 +1,4 @@
 Mutex activated by thread: 0
-Child thread: copied string t1 into text array: The wiser gives in! A sad truth, it established the world domination of stupidity.
-
-Current contents of text array: The wiser gives in! A sad truth, it established the world domination of stupidity.
-
-Mutex deactivated by thread: 0
-Mutex activated by thread: 0
-Child thread: copied string t2 into text array: We look for the truth, but we only want to find it where we like it.
-
-Mutex deactivated by thread: 0
-Mutex activated by thread: 1
-Parent thread: copied string from text array and printing it
-Current contents of outtext array: We look for the truth, but we only want to find it where we like it.
-
-Mutex deactivated by thread: 1
-Mutex activated by thread: 0
 Child thread: copied string t1 into shared_memory array: The wiser gives in! A sad truth, it established the world domination of stupidity.
 
 Current contents of shared_memory array: The wiser gives in! A sad truth, it established the world domination of stupidity.

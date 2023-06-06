@@ -85,3 +85,9 @@ while(flag==1);
 c2=1;
 flag =0;
 while(flag==0);
+
+
+why the weird output?
+
+eisenberg -> turn taking approach. each thread gets a turn at the critical section
+lamports -> ticket-based, child process continuously requests until parent process requests "starvation" (3 states, idle, want_in, or in_critical section)
