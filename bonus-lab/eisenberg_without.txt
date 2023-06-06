@@ -1,0 +1,9 @@
+Child thread: copied string t1 into text array: The wiser gives in! A sad truth, it established the world domination of stupidity.
+
+Current contents of text array: The wiser gives in! A sad truth, it established the world domination of stupidity.
+
+Child thread: copied string t2 into text array: We look for the truth, but we only want to find it where we like it.
+
+Parent thread: copied string from text array and printing it
+Current contents of outtext array: We look for the truth, but we only want to find it where we like it.
+

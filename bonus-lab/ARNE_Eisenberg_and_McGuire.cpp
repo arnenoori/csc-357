@@ -5,18 +5,18 @@
 #include <cstring>
 
 enum State {idle, want_in, in_cs};
-
 class EisenbergMcGuireMutex
 {
 public:
     EisenbergMcGuireMutex(int num_threads) : last(0), states(num_threads) {
         for(auto &state : states) {
-            state.store(idle);
+            state.store(static_cast<int>(idle));
         }
     }
 
     void lock(int id) {
-        states[id].store(want_in);
+        std::cout << "Mutex activated by thread: " << id << std::endl;
+        states[id].store(static_cast<int>(want_in));
         int index = last.load();
         while (index != id) {
             if (states[index].load() != idle) {
@@ -25,7 +25,7 @@ public:
                 index = (index + 1) % states.size();
             }
         }
-        states[id].store(in_cs);
+        states[id].store(static_cast<int>(in_cs));
         for (index = 0; index < states.size(); ++index) {
             if ((index != id) && (states[index].load() == in_cs)) {
                 break;
@@ -39,12 +39,13 @@ public:
     }
 
     void unlock(int id) {
-        states[id].store(idle);
+        states[id].store(static_cast<int>(idle));
+        std::cout << "Mutex deactivated by thread: " << id << std::endl;
     }
 
 private:
     std::atomic<int> last;
-    std::vector<std::atomic<State>> states;
+    std::vector<std::atomic<int>> states;
 };
 
 char text[1000];

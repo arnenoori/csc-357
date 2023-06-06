@@ -7,8 +7,22 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 #define MATRIX_DIMENSION_XY 10
 
+/*
+gcc -o program1 ARNE_prog1.c
+gcc -o program2 ARNE_prog2.c
+
+testing (works for all):
+
+./program1 0 1 (1 instance)
+
+./program2 ./program1 5
+./program2 ./program1 3 
+etc.
+
+*/
 
 void set_matrix_elem(float *matrix, int row, int col, float value)
 {
@@ -73,7 +87,7 @@ void synch(int par_id, int par_count, int *ready, int sync)
         printf("%d ", ready[i]);
     }
     printf("\n");
-    // First synchronization step: wait for all processes to reach this point.
+    // wait for all processes to reach this point
     for (int i = 0; i < par_count; i++)
     {
         while (ready[i] < sync + 1)
@@ -81,9 +95,8 @@ void synch(int par_id, int par_count, int *ready, int sync)
             // printf("Process %d: waiting for process %d, ready[%d] = %d, sync = %d\n", par_id, i, i, ready[i], sync);
         }
     }
-    // Update own status to indicate completion of waiting.
     ready[par_id] = sync + 2;
-    // Second synchronization step: wait for all processes to complete their waiting.
+    // wait for all processes to complete their waiting.
     for (int i = 0; i < par_count; i++)
     {
         while (ready[i] < sync + 2)
@@ -99,10 +112,10 @@ void quadratic_matrix_multiplication_parallel(int par_id, int par_count, float* 
 {
     // printf("Process %d: Entering quadratic_matrix_multiplication_parallel function\n", par_id);
 
-    int baseWork = MATRIX_DIMENSION_XY / par_count;
-    int remainingWork = MATRIX_DIMENSION_XY % par_count;
-    int startColumn = par_id * baseWork + (par_id < remainingWork ? par_id : remainingWork);
-    int endColumn = startColumn + baseWork + (par_id < remainingWork ? 1 : 0);
+    int base = MATRIX_DIMENSION_XY / par_count;
+    int remaining = MATRIX_DIMENSION_XY % par_count;
+    int startColumn = par_id * base + (par_id < remaining ? par_id : remaining);
+    int endColumn = startColumn + base + (par_id < remaining ? 1 : 0);
 
     synch(par_id, par_count, ready, 2);
 
@@ -139,7 +152,8 @@ int main(int argc, char *argv[])
 
     if (par_count == 1)
     {
-        // Initialize matrices A and B.
+        // for 1 instance
+        // initialize matrices A and B.
         A = malloc(MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
         B = malloc(MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
         C = malloc(MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
@@ -151,11 +165,8 @@ int main(int argc, char *argv[])
                 set_matrix_elem(B, i, j, (float)rand() / RAND_MAX * 10.0);
             }
         }
-        // Perform the matrix multiplication.
         quadratic_matrix_multiplication(A, B, C);
-        // Print the result.
         quadratic_matrix_print(C);
-        // Test the result.
         float M[MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY];
         quadratic_matrix_multiplication(A, B, M);
         if (quadratic_matrix_compare(C, M))
@@ -165,7 +176,6 @@ int main(int argc, char *argv[])
         {
             printf("Bug!\n");
         }
-        // Free the matrices.
         free(A);
         free(B);
         free(C);
@@ -286,6 +296,7 @@ if (par_id == 0)
     // printf("Process %d: Before synch 1\n", par_id);
     synch(par_id, par_count, ready, 1);
     // printf("Process %d: After synch 1\n", par_id);
+
 
     // printf("Process %d: Before multiplication\n", par_id);
     quadratic_matrix_multiplication_parallel(par_id, par_count, A, B, C, ready);

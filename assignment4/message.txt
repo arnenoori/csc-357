@@ -1,230 +1,55 @@
 #include <unistd.h>
-#include <signal.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <fcntl.h>
-#include <sys/mman.h>
+#include <stdlib.h>
 #include <sys/wait.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <time.h>
-
+#include <fcntl.h>
+#include <string.h>
 
 #define MATRIX_DIMENSION_XY 10
 
-
-//SEARCH FOR TODO
-
-//************************************************************************************************************************
-// sets one element of the matrix
-void set_matrix_elem(float *M,int x,int y,float f)
-{
-M[x + y*MATRIX_DIMENSION_XY] = f;
-}
-//************************************************************************************************************************
-// lets see it both are the same
-int quadratic_matrix_compare(float *A,float *B)
-{
-for(int a = 0;a<MATRIX_DIMENSION_XY;a++)
-    for(int b = 0;b<MATRIX_DIMENSION_XY;b++)
-       if(A[a +b * MATRIX_DIMENSION_XY]!=B[a +b * MATRIX_DIMENSION_XY]) 
-        return 0;
-   
-return 1;
-}
-//************************************************************************************************************************
-//print a matrix
-void quadratic_matrix_print(float *C)
-{
-    printf("\n");
-for(int a = 0;a<MATRIX_DIMENSION_XY;a++)
-    {
-    printf("\n");
-    for(int b = 0;b<MATRIX_DIMENSION_XY;b++)
-        printf("%.2f,",C[a + b* MATRIX_DIMENSION_XY]);
-    }
-printf("\n");
-}
-//************************************************************************************************************************
-// multiply two matrices
-void quadratic_matrix_multiplication(float *A,float *B,float *C)
-{
-    
-	//nullify the result matrix first
-for(int a = 0;a<MATRIX_DIMENSION_XY;a++)
-    for(int b = 0;b<MATRIX_DIMENSION_XY;b++)
-        C[a + b*MATRIX_DIMENSION_XY] = 0.0;
-//multiply
-for(int a = 0;a<MATRIX_DIMENSION_XY;a++) // over all cols a
-    for(int b = 0;b<MATRIX_DIMENSION_XY;b++) // over all rows b
-        for(int c = 0;c<MATRIX_DIMENSION_XY;c++) // over all rows/cols left
-            {
-                C[a + b*MATRIX_DIMENSION_XY] += A[c + b*MATRIX_DIMENSION_XY] * B[a + c*MATRIX_DIMENSION_XY]; 
-            }
-}
-//************************************************************************************************************************
-//TODO: synch algorithm. make sure, ALL processes get stuck here until all ARE here
-void synch(int par_id, int par_count, int *ready, int sync)
-{
-    ready[par_id] = sync;
-
-    for (int i = 0; i < par_count; i++)
-    {
-        while (ready[i] < sync)
-        {
-            // Wait until all processes have reached the synchronization point
-        }
-    }
-}
-
-
-void quadratic_matrix_multiplication_parallel(int par_id,int par_count,float* A, float* B,float* C)
-{
-    int splitWork = MATRIX_DIMENSION_XY / par_count;
-    int startCol = par_id * splitWork;
-    int endCol;
-    if (par_id == par_count - 1)
-    {
-        endCol = MATRIX_DIMENSION_XY;
-    }
-    else
-    {
-        endCol = startCol + splitWork ;
-    }
-//multiply
-for(int a = startCol; a < endCol; a++) // over all cols a
-    for(int b = 0;b<MATRIX_DIMENSION_XY;b++) // over all rows b
-        for(int c = 0;c<MATRIX_DIMENSION_XY;c++) // over all rows/cols left
-            {
-                C[a + b*MATRIX_DIMENSION_XY] += A[c + b*MATRIX_DIMENSION_XY] * B[a + c*MATRIX_DIMENSION_XY]; 
-            }
-}  
-
-
-//************************************************************************************************************************
 int main(int argc, char *argv[])
 {
-int par_id = 0; // the parallel ID of this process
-int par_count = 1; // the amount of processes
-float *A,*B,*C; //matrices A,B and C
-int *ready; //needed for synch
-
-if(argc!=3){printf("no shared\n");}
-    else
-    {
-    par_id= atoi(argv[1]);
-    par_count= atoi(argv[2]);
-    //strcpy(shared_mem_matrix,argv[3]);
-    }
-if(par_count==1){printf("only one process\n");}
-
-int fd[4];
-    if(par_id==0)
-    {
-    //TODO: init the shared memory for A,B,C, ready. shm_open with C_CREAT here! then ftruncate! then mmap
-    fd[0] = shm_open("matrixA", O_RDWR | O_CREAT, 0777);
-    ftruncate(fd[0], MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
-    A = (float*) mmap(NULL, sizeof(float) * MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY, PROT_READ | PROT_WRITE, MAP_SHARED, fd[0], 0);
-
-    fd[1] = shm_open("matrixB", O_RDWR | O_CREAT, 0777);
-    ftruncate(fd[1], MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
-    B = (float*) mmap(NULL, sizeof(float) * MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY, PROT_READ | PROT_WRITE, MAP_SHARED, fd[1], 0);
-    
-    fd[2] = shm_open("matrixC", O_RDWR | O_CREAT, 0777);
-    ftruncate(fd[2], MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
-    C = (float*) mmap(NULL, sizeof(float) * MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY, PROT_READ | PROT_WRITE, MAP_SHARED, fd[2], 0);
-    
-    fd[3] = shm_open("synchobject", O_RDWR | O_CREAT, 0777);
-    ftruncate(fd[3], sizeof(int));
-    ready = (int*) mmap(NULL, sizeof(int) * par_count, PROT_READ | PROT_WRITE, MAP_SHARED, fd[3], 0);
-
-    // ready initialize
-    for (int i = 0; i < par_count; i++){ready[i] = 0;}
-    
+    if (argc != 3) {
+        printf("Usage: %s program_path instance_count\n", argv[0]);
+        return 1;
     }
 
-else
-    {
-    sleep(1); //needed for initalizing synch
-	//TODO: init the shared memory for A,B,C, ready. shm_open withOUT C_CREAT here! NO ftruncate! but yes to mmap
+    char *program_path = argv[1];
+    int instance_count = atoi(argv[2]);
+    pid_t *pids = malloc(instance_count * sizeof(pid_t));
 
-    fd[0] = shm_open("matrixA", O_RDWR, 0777);
-    A = (float*) mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[0], 0);
+    for (int i = 0; i < instance_count; i++) {
+        pids[i] = fork();
+        
+        if (pids[i] < 0) {
+            perror("Failed to fork");
+            return 1;
+        }
 
-    fd[1] = shm_open("matrixB", O_RDWR,0777);
-    B = (float*) mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[1], 0);
-    
-    fd[2] = shm_open("matrixC", O_RDWR, 0777);
-    C = (float*) mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[2], 0);
+        if (pids[i] == 0) {
+            // This is the child process.
+            printf("Child: This is process with ID %d\n", i);
+            char par_id_str[10];
+            char par_count_str[10];
+            
+            sprintf(par_id_str, "%d", i);
+            sprintf(par_count_str, "%d", instance_count);
 
-    fd[3] = shm_open("synchobject", O_RDWR, 0777);
-    ready = (int*) mmap(NULL, sizeof(int) * par_count, PROT_READ | PROT_WRITE, MAP_SHARED, fd[3], 0);
-    
-    sleep(2);
+            char *args[] = {program_path, par_id_str, par_count_str, NULL};
+            execv(program_path, args);
+            perror("Failed to execv");
+            exit(1);
+        }
     }
 
-synch(par_id,par_count,ready, 1);
-if (par_id == 0)
-{
-    //TODO: initialize the matrices A and B
-    srand(time(0));
-        for (int i = 0; i < MATRIX_DIMENSION_XY; i++)
-        {
-            for (int j = 0; j < MATRIX_DIMENSION_XY; j++)
-            {
-            set_matrix_elem(A, i, j, rand() % 10);
-            set_matrix_elem(B, i, j, rand() % 10);
-            set_matrix_elem(C, i, j, 0.0);
-            }
-        }  
-}
-
-synch(par_id,par_count,ready, 2);
-
-// clock_t t;
-// int waittime = 3;
-// t = clock();
-//TODO: quadratic_matrix_multiplication_parallel(par_id, par_count,A,B,C, ...);
-quadratic_matrix_multiplication_parallel(par_id, par_count, A, B, C);
-// t = clock() - t;
-// double timeTaken = ((double)t) / CLOCKS_PER_SEC;
-
-synch(par_id,par_count,ready, 3);
-
-if(par_id==0)
-    quadratic_matrix_print(C);
-synch(par_id, par_count, ready, 4);
-
-//lets test the result:
-float M[MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY];
-quadratic_matrix_multiplication(A, B, M);
-if (par_id == par_count - 1)
-{
-    quadratic_matrix_print(M);
-}
-synch(par_id, par_count, ready, 5);
-if (quadratic_matrix_compare(C, M))
-    if (par_id == 0)
-    {
-        printf("full points!\n");
+    // Wait for all child processes to complete.
+    for (int i = 0; i < instance_count; i++) {
+        waitpid(pids[i], NULL, 0);
     }
-else
-{
-    if (par_id==0)
-    {
-        printf("buuug!\n"); 
-    }
-}
 
-close(fd[0]);
-close(fd[1]);
-close(fd[2]);
-close(fd[3]);
-shm_unlink("matrixA");
-shm_unlink("matrixB");
-shm_unlink("matrixC");
-shm_unlink("synchobject");
+    free(pids);
 
-return 0;    
+    return 0;
 }
