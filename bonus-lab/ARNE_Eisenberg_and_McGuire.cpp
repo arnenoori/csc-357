@@ -1,10 +1,13 @@
 #include <iostream>
-#include <thread>
 #include <atomic>
 #include <vector>
 #include <cstring>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <stdio.h>
 
 enum State {idle, want_in, in_cs};
+
 class EisenbergMcGuireMutex
 {
 public:
@@ -15,7 +18,7 @@ public:
     }
 
     void lock(int id) {
-        std::cout << "Mutex activated by thread: " << id << std::endl;
+        printf("Mutex activated by thread: %d\n", id);
         states[id].store(static_cast<int>(want_in));
         int index = last.load();
         while (index != id) {
@@ -40,7 +43,7 @@ public:
 
     void unlock(int id) {
         states[id].store(static_cast<int>(idle));
-        std::cout << "Mutex deactivated by thread: " << id << std::endl;
+        printf("Mutex deactivated by thread: %d\n", id);
     }
 
 private:
@@ -48,52 +51,50 @@ private:
     std::vector<std::atomic<int>> states;
 };
 
-char text[1000];
-char t1[] = "The wiser gives in! A sad truth, it established the world domination of stupidity.\n";
-char t2[] = "We look for the truth, but we only want to find it where we like it.\n";
-char outtext[1000];
-
-void child_thread(EisenbergMcGuireMutex* mutex)
-{
-    mutex->lock(0);
-    strcpy(text, t1);
-    std::cout << "Child thread: copied string t1 into text array: " << t1 << std::endl;
-    std::cout << "Current contents of text array: " << text << std::endl;
-
-    mutex->unlock(0);
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-
-    mutex->lock(0);
-    strcpy(text, t2);
-    std::cout << "Child thread: copied string t2 into text array: " << t2 << std::endl;
-    mutex->unlock(0);
-}
-
-
-void parent_thread(EisenbergMcGuireMutex* mutex)
-{
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-
-    mutex->lock(1);
-    strcpy(outtext, text);
-    std::cout << "Parent thread: copied string from text array and printing it" << std::endl;
-    std::cout << "Current contents of outtext array: " << outtext << std::endl;
-    mutex->unlock(1);
-}
-
+const char *t1 = "The wiser gives in! A sad truth, it established the world domination of stupidity.\n";
+const char *t2 = "We look for the truth, but we only want to find it where we like it.\n";
 
 int main()
 {
+    // shared memory of size 1000
+    char *shared_memory = (char*)mmap(NULL, 1000, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
     EisenbergMcGuireMutex mutex(2); // parent & child threads
 
-    std::thread child(child_thread, &mutex);
-    std::thread parent(parent_thread, &mutex);
+    pid_t pid = fork();
 
-    child.join();
-    parent.join();
+    if(pid < 0) {
+        fprintf(stderr, "Fork failed\n");
+        return 1;
+    }
+
+    if(pid == 0) { // child process
+        mutex.lock(0);
+        strcpy(shared_memory, t1);
+        printf("Child thread: copied string t1 into shared_memory array: %s\n", t1);
+        printf("Current contents of shared_memory array: %s\n", shared_memory);
+        mutex.unlock(0);
+        sleep(1);
+
+        mutex.lock(0);
+        strcpy(shared_memory, t2);
+        printf("Child thread: copied string t2 into shared_memory array: %s\n", t2);
+        mutex.unlock(0);
+    }
+    else { // parent process
+        sleep(2);
+
+        mutex.lock(1);
+        char outtext[1000];
+        strcpy(outtext, shared_memory);
+        printf("Parent thread: copied string from shared_memory array and printing it\n");
+        printf("Current contents of outtext array: %s\n", outtext);
+        mutex.unlock(1);
+    }
 
     return 0;
 }
+
 
 
 /*

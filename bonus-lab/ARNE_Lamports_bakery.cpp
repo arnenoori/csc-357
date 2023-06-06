@@ -1,7 +1,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <sys/mman.h>
-#include <string.h>
+#include <cstring>
 #include <atomic>
 #include <array>
 
@@ -26,7 +26,7 @@ public:
 
     void lock(int id)
     {
-        std::cout << "Mutex activated by process: " << id << std::endl;
+        printf("Mutex activated by process: %d\n", id);
         entering[id] = true;
         int max = 0;
         for (int i = 0; i < num_processes; i++)
@@ -38,16 +38,16 @@ public:
 
         for (int other_id = 0; other_id < num_processes; ++other_id)
         {
-            while (entering[other_id]) { }
-            while (number[other_id] != 0 &&
-                (number[other_id] < number[id] || (number[other_id] == number[id] && other_id < id))) { }
+            while (entering[other_id].load()) { }
+            while (number[other_id].load() != 0 &&
+                (number[other_id].load() < number[id].load() || (number[other_id].load() == number[id].load() && other_id < id))) { }
         }
     }
 
     void unlock(int id)
     {
         number[id] = 0;
-        std::cout << "Mutex deactivated by process: " << id << std::endl;
+        printf("Mutex deactivated by process: %d\n", id);
     }
 };
 
@@ -75,19 +75,19 @@ int main()
                 strcpy(shared_memory, text1);
                 if (i == 0)
                 {
-                    cout << "Child thread: copied string t1 into shared_memory array: " << text1 << endl;
+                    printf("Child thread: copied string t1 into shared_memory array: %s\n", text1);
                 }
             } else
             {
                 strcpy(shared_memory, text2);
                 if (i == 1)
                 {
-                    cout << "Child thread: copied string t2 into shared_memory array: " << text2 << endl;
+                    printf("Child thread: copied string t2 into shared_memory array: %s\n", text2);
                 }
             }
             if (i == 0)
             {
-                cout << "Current contents of shared_memory array: " << shared_memory << endl;
+                printf("Current contents of shared_memory array: %s\n", shared_memory);
             }
             mutex.unlock(0);
             usleep(100); // delay
@@ -102,11 +102,11 @@ int main()
             strcpy(outtext, shared_memory);
             if (i == 0)
             {
-                cout << "Parent thread: copied string from shared_memory array and printing it" << endl;
+                printf("Parent thread: copied string from shared_memory array and printing it\n");
             }
             if (i == 0)
             {
-                cout << outtext << endl;
+                printf("%s\n", outtext);
             }
             mutex.unlock(1);
             usleep(100);

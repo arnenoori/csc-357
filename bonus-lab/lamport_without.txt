@@ -1,6 +1,3 @@
-Parent thread: copied string from shared_memory array and printing it
-Current contents of outtext array: We look for the truth, but we only want to find it where we like it.
-
 Child thread: copied string t1 into shared_memory array: The wiser gives in! A sad truth, it established the world domination of stupidity.
 
 Current contents of shared_memory array: The wiser gives in! A sad truth, it established the world domination of stupidity.
@@ -8,5 +5,5 @@ Current contents of shared_memory array: The wiser gives in! A sad truth, it est
 Child thread: copied string t2 into shared_memory array: We look for the truth, but we only want to find it where we like it.
 
 Parent thread: copied string from shared_memory array and printing it
-Current contents of outtext array: We look for the truth, but we only want to find it where we like it.
+We look for the truth, but we only want to find it where we like it.
 
