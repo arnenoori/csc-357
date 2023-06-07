@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/wait.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 int main(int argc, char *argv[])
 {
@@ -10,7 +13,8 @@ int main(int argc, char *argv[])
         printf("Usage: %s <program> <instance_count>\n", argv[0]);
         return 1;
     }
-    const char *program = argv[1];
+
+    char *program = argv[1];
     int instance_count = atoi(argv[2]);
 
     pid_t *pids = malloc(sizeof(pid_t) * instance_count);
@@ -18,6 +22,14 @@ int main(int argc, char *argv[])
     {
         printf("Error: Unable to allocate memory for process IDs\n");
         return 1;
+    }
+
+    int shm_fd = shm_open("ready", O_CREAT | O_RDWR, 0666);
+    ftruncate(shm_fd, sizeof(int) * instance_count);
+    int *ready = mmap(0, sizeof(int) * instance_count, PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    for (int i = 0; i < instance_count; i++)
+    {
+        ready[i] = 0;
     }
 
     for (int i = 0; i < instance_count; i++)
@@ -33,10 +45,10 @@ int main(int argc, char *argv[])
         } else if (pids[i] == 0)
         {
             // child process
-            char par_id_str[10];
-            sprintf(par_id_str, "%d", i);
-            char par_count_str[10];
-            sprintf(par_count_str, "%d", instance_count);
+            char par_id_str[11];
+            snprintf(par_id_str, 11, "%d", i);
+            char par_count_str[11];
+            snprintf(par_count_str, 11, "%d", instance_count);
 
             char *args[] = {program, par_id_str, par_count_str, NULL};
             execv(program, args);
@@ -53,6 +65,7 @@ int main(int argc, char *argv[])
     }
 
     free(pids);
+    shm_unlink("ready");
 
     printf("All instances completed\n");
 
