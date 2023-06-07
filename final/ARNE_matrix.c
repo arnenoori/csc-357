@@ -135,11 +135,10 @@ void scale_and_cast_to_byte(RGB_VALUES_FLOAT *image, RGB_VALUES *result, int wid
 }
 
 
-void matrix_multiply(RGB_VALUES_FLOAT *image1, RGB_VALUES_FLOAT *image2, RGB_VALUES_FLOAT *result, int width, int height, int par_id, int par_count)
+void matrix_multiply(RGB_VALUES_FLOAT *image1, RGB_VALUES_FLOAT *image2, RGB_VALUES_FLOAT *result, int width, int height, int par_id, int par_count, int *ready)
 {
     int start_row = (height / par_count) * par_id;
     int end_row = (par_id == par_count - 1) ? height : start_row + (height / par_count);
-    // int end_row = (par_id == par_count - 1) ? height : start_row + (height / par_count) + (height % par_count > par_id);
 
     for (int i = start_row; i < end_row; i++)
     {
@@ -168,40 +167,66 @@ void matrix_multiply(RGB_VALUES_FLOAT *image1, RGB_VALUES_FLOAT *image2, RGB_VAL
             }
         }
     }
-
+    ready[par_id]++;
+    while (1) {
+        int done = 1;
+        for (int i = 0; i < par_count; i++) {
+            if (ready[i] < 1) {
+                done = 0;
+                break;
+            }
+        }
+        if (done) {
+            break;
+        }
+    }
     // printf("Matrix multiplication completed by process %d\n", par_id);
 }
 
 
 void synch(int par_id, int par_count, int *ready, int sync)
 {
-    // printf("Process %d: Entering synch function, sync = %d\n", par_id, sync);
     ready[par_id] = sync + 1;
-    // printf("Process %d: ready array after update:\n", par_id);
-    for (int i = 0; i < par_count; i++)
+
+    // Wait for all instances to reach this point
+    while (1)
     {
-        printf("%d ", ready[i]);
-    }
-    printf("\n");
-    // first synchronization step: wait for all processes to reach this point
-    for (int i = 0; i < par_count; i++)
-    {
-        while (ready[i] < sync + 1)
+        int done = 1;
+        for (int i = 0; i < par_count; i++)
         {
-            // printf("Process %d: waiting for process %d, ready[%d] = %d, sync = %d\n", par_id, i, i, ready[i], sync);
+            if (ready[i] < sync + 1)
+            {
+                done = 0;
+                break;
+            }
+        }
+        if (done)
+        {
+            break;
         }
     }
+
     ready[par_id] = sync + 2;
-    // second synchronization step: wait for all processes to complete their waiting
-    for (int i = 0; i < par_count; i++)
+
+    // Wait for all instances to finish waiting
+    while (1)
     {
-        while (ready[i] < sync + 2)
+        int done = 1;
+        for (int i = 0; i < par_count; i++)
         {
-            // printf("Process %d: waiting for process %d to finish waiting, ready[%d] = %d, sync = %d\n", par_id, i, i, ready[i], sync);
+            if (ready[i] < sync + 2)
+            {
+                done = 0;
+                break;
+            }
+        }
+        if (done)
+        {
+            break;
         }
     }
-    // printf("Process %d: Leaving synch function, sync = %d\n", par_id, sync);
 }
+
 
 
 int main(int argc, char *argv[])
@@ -252,7 +277,17 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    matrix_multiply(image_f1, image_f2, result_f, infoheader1.biWidth, infoheader1.biHeight, par_id, par_count);
+    int shm_fd = shm_open("ready", O_CREAT | O_RDWR, 0666);
+    ftruncate(shm_fd, sizeof(int) * par_count);
+    int *ready = mmap(0, sizeof(int) * par_count, PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    for (int i = 0; i < par_count; i++)
+    {
+        ready[i] = 0;
+    }
+
+    matrix_multiply(image_f1, image_f2, result_f, infoheader1.biWidth, infoheader1.biHeight, par_id, par_count, ready);
+
+    synch(par_id, par_count, ready, 0);
 
     scale_and_cast_to_byte(result_f, result, infoheader1.biWidth, infoheader1.biHeight);
 
@@ -262,6 +297,11 @@ int main(int argc, char *argv[])
     free(image2);
     free(result_f);
     free(result);
+
+    if (par_id == 0)
+    {
+        shm_unlink("ready");
+    }
 
     end = clock();
     double time_taken = ((double)end - start) / CLOCKS_PER_SEC;
