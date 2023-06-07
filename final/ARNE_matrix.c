@@ -116,19 +116,20 @@ void normalize_colors(RGB_VALUES *image, RGB_VALUES_FLOAT *image_f, int width, i
 }
 
 
-void scale_and_cast_to_byte(RGB_VALUES *image, int width, int height) {
+void scale_and_cast_to_byte(RGB_VALUES_FLOAT *image, RGB_VALUES *result, int width, int height) {
     // Loop over each pixel in the image, multiply the colors by 0.03 and then by 255, and cast to a byte
     for (int i = 0; i < width*height; i++) {
         printf("Before scaling: R=%f, G=%f, B=%f\n", image[i].rgbtRed, image[i].rgbtGreen, image[i].rgbtBlue);
-        image[i].rgbtRed = (unsigned char)(image[i].rgbtRed * 0.03 * 255);
-        image[i].rgbtGreen = (unsigned char)(image[i].rgbtGreen * 0.03 * 255);
-        image[i].rgbtBlue = (unsigned char)(image[i].rgbtBlue * 0.03 * 255);
-        printf("After scaling: R=%u, G=%u, B=%u\n", image[i].rgbtRed, image[i].rgbtGreen, image[i].rgbtBlue);
+        result[i].rgbtRed = (unsigned char)(image[i].rgbtRed * 0.03 * 255);
+        result[i].rgbtGreen = (unsigned char)(image[i].rgbtGreen * 0.03 * 255);
+        result[i].rgbtBlue = (unsigned char)(image[i].rgbtBlue * 0.03 * 255);
+        printf("After scaling: R=%u, G=%u, B=%u\n", result[i].rgbtRed, result[i].rgbtGreen, result[i].rgbtBlue);
     }
     printf("Colors scaled and cast to byte.\n");
 }
 
-void matrix_multiply(RGB_VALUES *image1, RGB_VALUES *image2, RGB_VALUES *result, int width, int height, int par_id, int par_count) {
+
+void matrix_multiply_old(RGB_VALUES *image1, RGB_VALUES *image2, RGB_VALUES *result, int width, int height, int par_id, int par_count) {
     int start_row = (height / par_count) * par_id;
     int end_row = (par_id == par_count - 1) ? height : start_row + (height / par_count);
 
@@ -142,9 +143,9 @@ void matrix_multiply(RGB_VALUES *image1, RGB_VALUES *image2, RGB_VALUES *result,
 
             for (int k = 0; k < width; k++) {
                 if (pixel_counter % 100 == 0) {
-                    printf("Before multiplication: R1=%f, G1=%f, B1=%f, R2=%f, G2=%f, B2=%f\n", 
-                        image1[i*width + k].rgbtRed, image1[i*width + k].rgbtGreen, image1[i*width + k].rgbtBlue,
-                        image2[k*width + j].rgbtRed, image2[k*width + j].rgbtGreen, image2[k*width + j].rgbtBlue);
+                    printf("Before multiplication: R1=%u, G1=%u, B1=%u, R2=%u, G2=%u, B2=%u\n", 
+                    image1[i*width + k].rgbtRed, image1[i*width + k].rgbtGreen, image1[i*width + k].rgbtBlue,
+                    image2[k*width + j].rgbtRed, image2[k*width + j].rgbtGreen, image2[k*width + j].rgbtBlue);
                 }
 
                 result[i*width + j].rgbtRed += image1[i*width + k].rgbtRed * image2[k*width + j].rgbtRed;
@@ -152,8 +153,8 @@ void matrix_multiply(RGB_VALUES *image1, RGB_VALUES *image2, RGB_VALUES *result,
                 result[i*width + j].rgbtBlue += image1[i*width + k].rgbtBlue * image2[k*width + j].rgbtBlue;
 
                 if (pixel_counter % 100 == 0) {
-                    printf("After multiplication: R=%f, G=%f, B=%f\n", 
-                        result[i*width + j].rgbtRed, result[i*width + j].rgbtGreen, result[i*width + j].rgbtBlue);
+                    printf("After multiplication: R=%u, G=%u, B=%u\n", 
+                    result[i*width + j].rgbtRed, result[i*width + j].rgbtGreen, result[i*width + j].rgbtBlue);
                 }
 
                 pixel_counter++;
@@ -164,6 +165,66 @@ void matrix_multiply(RGB_VALUES *image1, RGB_VALUES *image2, RGB_VALUES *result,
     printf("Matrix multiplication completed by process %d\n", par_id);
 }
 
+void matrix_multiply(RGB_VALUES_FLOAT *image1, RGB_VALUES_FLOAT *image2, RGB_VALUES_FLOAT *result, int width, int height, int par_id, int par_count) {
+    int start_row = (height / par_count) * par_id;
+    int end_row = (par_id == par_count - 1) ? height : start_row + (height / par_count);
+
+    for (int i = start_row; i < end_row; i++) {
+        for (int j = 0; j < width; j++) {
+            result[i*width + j].rgbtRed = 0;
+            result[i*width + j].rgbtGreen = 0;
+            result[i*width + j].rgbtBlue = 0;
+
+            for (int k = 0; k < width; k++) {
+                printf("Before multiplication: R1=%f, G1=%f, B1=%f, R2=%f, G2=%f, B2=%f\n", 
+                image1[i*width + k].rgbtRed, image1[i*width + k].rgbtGreen, image1[i*width + k].rgbtBlue,
+                image2[k*width + j].rgbtRed, image2[k*width + j].rgbtGreen, image2[k*width + j].rgbtBlue);
+
+                result[i*width + j].rgbtRed += image1[i*width + k].rgbtRed * image2[k*width + j].rgbtRed;
+                result[i*width + j].rgbtGreen += image1[i*width + k].rgbtGreen * image2[k*width + j].rgbtGreen;
+                result[i*width + j].rgbtBlue += image1[i*width + k].rgbtBlue * image2[k*width + j].rgbtBlue;
+
+                printf("After multiplication: R=%f, G=%f, B=%f\n", 
+                result[i*width + j].rgbtRed, result[i*width + j].rgbtGreen, result[i*width + j].rgbtBlue);
+            }
+        }
+    }
+
+    printf("Matrix multiplication completed by process %d\n", par_id);
+}
+
+
+void elementwise_multiply(RGB_VALUES_FLOAT *image1, RGB_VALUES_FLOAT *image2, RGB_VALUES_FLOAT *result, int width, int height, int par_id, int par_count) {
+    int start_row = (height / par_count) * par_id;
+    int end_row = (par_id == par_count - 1) ? height : start_row + (height / par_count);
+    float min_value = 1.0;
+    float max_value = 0.0;
+
+    for (int i = start_row; i < end_row; i++) {
+        for (int j = 0; j < width; j++) {
+            // printf("Before multiplication: R1=%f, G1=%f, B1=%f, R2=%f, G2=%f, B2=%f\n",
+                   image1[i*width + j].rgbtRed, image1[i*width + j].rgbtGreen, image1[i*width + j].rgbtBlue,
+                   image2[i*width + j].rgbtRed, image2[i*width + j].rgbtGreen, image2[i*width + j].rgbtBlue);
+
+            result[i*width + j].rgbtRed = image1[i*width + j].rgbtRed * image2[i*width + j].rgbtRed;
+            result[i*width + j].rgbtGreen = image1[i*width + j].rgbtGreen * image2[i*width + j].rgbtGreen;
+            result[i*width + j].rgbtBlue = image1[i*width + j].rgbtBlue * image2[i*width + j].rgbtBlue;
+
+            // printf("After multiplication: R=%f, G=%f, B=%f\n",
+                   result[i*width + j].rgbtRed, result[i*width + j].rgbtGreen, result[i*width + j].rgbtBlue);
+
+            min_value = fminf(min_value, result[i*width + j].rgbtRed);
+            min_value = fminf(min_value, result[i*width + j].rgbtGreen);
+            min_value = fminf(min_value, result[i*width + j].rgbtBlue);
+
+            max_value = fmaxf(max_value, result[i*width + j].rgbtRed);
+            max_value = fmaxf(max_value, result[i*width + j].rgbtGreen);
+            max_value = fmaxf(max_value, result[i*width + j].rgbtBlue);
+        }
+    }
+
+    printf("Element-wise multiplication completed by process %d. Min value = %f, Max value = %f\n", par_id, min_value, max_value);
+}
 
 
 int main(int argc, char *argv[]) {
@@ -208,22 +269,24 @@ int main(int argc, char *argv[]) {
 
 
     // Perform matrix multiplication
+    RGB_VALUES_FLOAT *result_f = malloc(sizeof(RGB_VALUES_FLOAT) * infoheader1.biWidth * infoheader1.biHeight);
     RGB_VALUES *result = malloc(sizeof(RGB_VALUES) * infoheader1.biWidth * infoheader1.biHeight);
-    if (result == NULL) {
+    if (result_f == NULL || result == NULL) {
         printf("Error: Unable to allocate memory for result image\n");
         return 1;
     }
-    matrix_multiply(image1, image2, result, infoheader1.biWidth, infoheader1.biHeight, par_id, par_count);
+    matrix_multiply(image_f1, image_f2, result_f, infoheader1.biWidth, infoheader1.biHeight, par_id, par_count);
 
     // Scale the result and cast to byte
-    scale_and_cast_to_byte(result, infoheader1.biWidth, infoheader1.biHeight);
+    scale_and_cast_to_byte(result_f, result, infoheader1.biWidth, infoheader1.biHeight);
 
     // Save the result image
-    write_bmp("f0.bmp", &fileheader1, &infoheader1, result);
+    write_bmp("output1.bmp", &fileheader1, &infoheader1, result);
 
     // Free memory
     free(image1);
     free(image2);
+    free(result_f);
     free(result);
 
     // Print the time it takes for the calculation
