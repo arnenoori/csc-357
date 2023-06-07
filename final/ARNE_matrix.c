@@ -137,6 +137,23 @@ void scale_and_cast_to_byte(RGB_VALUES_FLOAT *image, RGB_VALUES *result, int wid
 
 void matrix_multiply(RGB_VALUES_FLOAT *image1, RGB_VALUES_FLOAT *image2, RGB_VALUES_FLOAT *result, int width, int height, int par_id, int par_count, int *ready)
 {
+    // Wait for all processes to be created
+    while (1)
+    {
+        int done = 1;
+        for (int i = 0; i < par_count; i++)
+        {
+            if (ready[i] != 0)
+            {
+                done = 0;
+                break;
+            }
+        }
+        if (done)
+        {
+            break;
+        }
+    }
     int start_row = (height / par_count) * par_id;
     int end_row = (par_id == par_count - 1) ? height : start_row + (height / par_count);
 
@@ -226,7 +243,6 @@ void synch(int par_id, int par_count, int *ready, int sync)
         }
     }
 }
-
 
 
 int main(int argc, char *argv[])
