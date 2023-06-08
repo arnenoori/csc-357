@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <math.h>
 #include <time.h>
+#include <sys/file.h>
 #define BMP_H
 
 typedef unsigned short WORD;
@@ -63,18 +64,31 @@ RGB_VALUES get_color(RGB_VALUES *image, int x, int y, int width)
 void write_bmp(char *filename, BITMAPFILEHEADER *bf, BITMAPINFOHEADER *bi, RGB_VALUES *image)
 {
     FILE *file = fopen(filename, "wb");
+    int fd = fileno(file);
+
+    if (flock(fd, LOCK_EX) == -1)
+    {
+        perror("flock");
+        return;
+    }
 
     fwrite(bf, sizeof(BITMAPFILEHEADER), 1, file);
     fwrite(bi, sizeof(BITMAPINFOHEADER), 1, file);
     int padding = (4 - (bi->biWidth * sizeof(RGB_VALUES)) % 4) % 4;
-
     unsigned char pad[3] = {0, 0, 0};
-        for (int i = 0; i < bi->biHeight; i++)
-        {
-            fwrite(&image[i * bi->biWidth], sizeof(RGB_VALUES), bi->biWidth, file);
-            fwrite(pad, 1, padding, file);
-        }
-        fclose(file);
+
+    for (int i = 0; i < bi->biHeight; i++)
+    {
+        fwrite(&image[i * bi->biWidth], sizeof(RGB_VALUES), bi->biWidth, file);
+        fwrite(pad, 1, padding, file);
+    }
+    if (flock(fd, LOCK_UN) == -1)
+    {
+        perror("flock");
+        return;
+    }
+
+    fclose(file);
 }
 
 
@@ -99,9 +113,7 @@ void read_image(const char *filename, BITMAPFILEHEADER *fileheader, BITMAPINFOHE
     }
 
     fread(*image, sizeof(RGB_VALUES), infoheader->biWidth * infoheader->biHeight, file);
-
     fclose(file);
-
     printf("Read image %s\n", filename);
 }
 
@@ -122,7 +134,7 @@ void normalize_colors(RGB_VALUES *image, RGB_VALUES_FLOAT *image_f, int width, i
 
 void scale_and_cast_to_byte(RGB_VALUES_FLOAT *image, RGB_VALUES *result, int width, int height)
 {
-    // loop over each pixel in the image then multiply the colors by 0.03 and then by 255, and cast to a byte
+    // loop over each pixel in the image then multiply the colors by 0.03 and then by 255 and then cast to a byte
     for (int i = 0; i < width*height; i++)
     {
         // printf("Before scaling: R=%f, G=%f, B=%f\n", image[i].rgbtRed, image[i].rgbtGreen, image[i].rgbtBlue);
@@ -137,7 +149,6 @@ void scale_and_cast_to_byte(RGB_VALUES_FLOAT *image, RGB_VALUES *result, int wid
 
 void matrix_multiply(RGB_VALUES_FLOAT *image1, RGB_VALUES_FLOAT *image2, RGB_VALUES_FLOAT *result, int width, int height, int par_id, int par_count, int *ready)
 {
-    // Wait for all processes to be created
     while (1)
     {
         int done = 1;
@@ -154,9 +165,14 @@ void matrix_multiply(RGB_VALUES_FLOAT *image1, RGB_VALUES_FLOAT *image2, RGB_VAL
             break;
         }
     }
-    int start_row = (height / par_count) * par_id;
-    int end_row = (par_id == par_count - 1) ? height : start_row + (height / par_count);
 
+    int rows_per_process = height / par_count;
+    int remainder_rows = height % par_count;
+
+    int start_row = rows_per_process * par_id + (par_id < remainder_rows ? par_id : remainder_rows);
+    int end_row = start_row + rows_per_process + (par_id < remainder_rows);
+
+    // printf("Proccess %d starting matrix multiplication for rows %d to %d\n", par_id, start_row, end_row);
     for (int i = start_row; i < end_row; i++)
     {
         for (int j = 0; j < width; j++)
@@ -185,10 +201,14 @@ void matrix_multiply(RGB_VALUES_FLOAT *image1, RGB_VALUES_FLOAT *image2, RGB_VAL
         }
     }
     ready[par_id]++;
-    while (1) {
+    // printf("Process %d finished multiplication, ready[%d] is now %d\n", par_id, par_id, ready[par_id]);
+    while (1)
+    {
         int done = 1;
-        for (int i = 0; i < par_count; i++) {
-            if (ready[i] < 1) {
+        for (int i = 0; i < par_count; i++)
+        {
+            if (ready[i] < 1)
+            {
                 done = 0;
                 break;
             }
@@ -204,8 +224,9 @@ void matrix_multiply(RGB_VALUES_FLOAT *image1, RGB_VALUES_FLOAT *image2, RGB_VAL
 void synch(int par_id, int par_count, int *ready, int sync)
 {
     ready[par_id] = sync + 1;
-
-    // Wait for all instances to reach this point
+    // printf("Process %d reached synchronization point %d, ready[%d] is now %d\n", par_id, sync, par_id, ready[par_id]);
+    // printf("Process %d entering synchronization point %d\n", par_id, sync);
+    // wait for all instances to arrive at this point
     while (1)
     {
         int done = 1;
@@ -222,10 +243,9 @@ void synch(int par_id, int par_count, int *ready, int sync)
             break;
         }
     }
-
+    // printf("Process %d finished waiting at synchronization point %d\n", par_id, sync);
     ready[par_id] = sync + 2;
-
-    // Wait for all instances to finish waiting
+    // waiting for all instances to finish
     while (1)
     {
         int done = 1;
@@ -242,6 +262,7 @@ void synch(int par_id, int par_count, int *ready, int sync)
             break;
         }
     }
+    // printf("Process %d leaving synch point %d\n", par_id, sync);
 }
 
 
@@ -263,9 +284,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    clock_t start, end;
-    start = clock();
-
     BITMAPFILEHEADER fileheader1, fileheader2;
     BITMAPINFOHEADER infoheader1, infoheader2;
     RGB_VALUES *image1, *image2;
@@ -285,7 +303,9 @@ int main(int argc, char *argv[])
     normalize_colors(image1, image_f1, infoheader1.biWidth, infoheader1.biHeight);
     normalize_colors(image2, image_f2, infoheader2.biWidth, infoheader2.biHeight);
 
-    RGB_VALUES_FLOAT *result_f = malloc(sizeof(RGB_VALUES_FLOAT) * infoheader1.biWidth * infoheader1.biHeight);
+    int shm_fd_res = shm_open("result_f", O_CREAT | O_RDWR, 0666);
+    ftruncate(shm_fd_res, sizeof(RGB_VALUES_FLOAT) * infoheader1.biWidth * infoheader1.biHeight);
+    RGB_VALUES_FLOAT *result_f = mmap(0, sizeof(RGB_VALUES_FLOAT) * infoheader1.biWidth * infoheader1.biHeight, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd_res, 0);
     RGB_VALUES *result = malloc(sizeof(RGB_VALUES) * infoheader1.biWidth * infoheader1.biHeight);
     if (result_f == NULL || result == NULL)
     {
@@ -301,27 +321,59 @@ int main(int argc, char *argv[])
         ready[i] = 0;
     }
 
+    clock_t start, end;
+    start = clock();
     matrix_multiply(image_f1, image_f2, result_f, infoheader1.biWidth, infoheader1.biHeight, par_id, par_count, ready);
 
     synch(par_id, par_count, ready, 0);
 
     scale_and_cast_to_byte(result_f, result, infoheader1.biWidth, infoheader1.biHeight);
 
-    write_bmp("output.bmp", &fileheader1, &infoheader1, result);
-
-    free(image1);
-    free(image2);
-    free(result_f);
-    free(result);
+    synch(par_id, par_count, ready, 1);
+    end = clock();
 
     if (par_id == 0)
     {
-        shm_unlink("ready");
+        double time_taken = ((double)end - start) / CLOCKS_PER_SEC;
+        printf("Matrix multiplication took %f seconds to execute \n", time_taken);
     }
 
-    end = clock();
-    double time_taken = ((double)end - start) / CLOCKS_PER_SEC;
-    printf("Matrix multiplication took %f seconds to execute \n", time_taken);
+    // printf("Process %d about the write bitmap\n", par_id);
+    // printf("Process %d checking if it should write bitmap\n", par_id);
+    if (par_id == 0)
+    {
+        // printf("Process %d is writing bitmap\n", par_id);
+        write_bmp("output.bmp", &fileheader1, &infoheader1, result);
+    } else
+    {
+        // printf("Process %d is not writing bitmap\n", par_id);
+    }
+
+    free(image1);
+    free(image2);
+    free(result);
+
+    if (munmap(result_f, sizeof(RGB_VALUES_FLOAT) * infoheader1.biWidth * infoheader1.biHeight) == -1)
+    {
+        perror("munmap");
+    }
+
+    if (munmap(ready, sizeof(int) * par_count) == -1)
+    {
+        perror("munmap");
+    }
+
+    if (par_id == 0)
+    {
+        if (shm_unlink("result_f") == -1)
+        {
+            perror("shm_unlink");
+        }
+        if (shm_unlink("ready") == -1)
+        {
+            perror("shm_unlink");
+        }
+    }
 
     return 0;
 }
