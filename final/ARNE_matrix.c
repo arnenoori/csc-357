@@ -114,7 +114,6 @@ void read_image(const char *filename, BITMAPFILEHEADER *fileheader, BITMAPINFOHE
 
     fread(*image, sizeof(RGB_VALUES), infoheader->biWidth * infoheader->biHeight, file);
     fclose(file);
-    printf("Read image %s\n", filename);
 }
 
 
